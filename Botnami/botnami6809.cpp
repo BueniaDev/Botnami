@@ -31,19 +31,20 @@ namespace botnami
 	    case 0x4B:
 	    {
 		rega = dec_internal8(rega);
-		cycles = 3;
+		cycles = 2;
 	    }
 	    break; // DECA
 	    case 0x5A:
 	    case 0x5B:
 	    {
 		regb = dec_internal8(regb);
-		cycles = 3;
+		cycles = 2;
 	    }
 	    break; // DECB
 	    case 0x81:
 	    {
 		cmp8(rega, getimmByte());
+		cycles = 2;
 	    }
 	    break; // CMPA
 	    case 0x86:

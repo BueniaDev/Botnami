@@ -20,59 +20,55 @@
 using namespace botnami;
 using namespace std;
 
-// KONAMI-2 opcode logic (WIP)
-
 namespace botnami
 {
-    int BotnamiKonami2::indexed_mode()
+    int Botnami6309::executeinstr(uint8_t instr)
     {
+	bool is_native = is_native_mode();
 	int cycles = 0;
-	uint8_t opcode = getimmByte();
-
-	uint16_t address = 0;
-
-	switch ((opcode & 0xF7))
-	{
-	    case 0x07:
-	    {
-		address = getimmWord();
-		cycles = 3;
-	    }
-	    break;
-	    default:
-	    {
-		cout << "Unrecognized indexed opcode of " << hex << int(opcode) << endl;
-		exit(1);
-	    }
-	    break;
-	}
-
-	if (testbit(opcode, 3))
-	{
-	    cout << "Indirect mode unimplemented" << endl;
-	}
-
-	extended_address = address;
-	return cycles;
-    }
-
-    int BotnamiKonami2::executeinstr(uint8_t instr)
-    {
-	int cycles = 0;
-
 	switch (instr)
 	{
-	    case 0x10:
+	    case 0x4A:
+	    {
+		rega = dec_internal8(rega);
+		cycles = is_native ? 1 : 2;
+	    }
+	    break; // DECA
+	    case 0x5A:
+	    {
+		regb = dec_internal8(regb);
+		cycles = is_native ? 1 : 2;
+	    }
+	    break; // DECB
+	    case 0x81:
+	    {
+		cmp8(rega, getimmByte());
+		cycles = 2;
+	    }
+	    break; // CMPA
+	    case 0x86:
 	    {
 		rega = getimmByte();
 		set_nz(rega);
 		cycles = 2;
 	    }
 	    break; // LDA
+	    case 0x8B:
+	    {
+		rega = add8(rega, getimmByte());
+		cycles = 2;
+	    }
+	    break; // ADDA
+	    case 0xC6:
+	    {
+		regb = getimmByte();
+		set_nz(regb);
+		cycles = 2;
+	    }
+	    break; // LDB
 	    default: unrecognizedinstr(instr); break;
 	}
 
 	return cycles;
     }
-
 };

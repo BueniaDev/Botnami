@@ -165,7 +165,7 @@ namespace botnami
 	    virtual int executeinstr(uint8_t instr);
 
 	    uint8_t readOpcode();
-	    uint8_t readOpcode(uint16_t addr);
+	    virtual uint8_t readOpcode(uint16_t addr);
 	    uint8_t readByte(uint16_t addr);
 	    uint16_t readWord(uint16_t addr);
 
@@ -202,7 +202,7 @@ namespace botnami
 	    void reset()
 	    {
 		cout << "Botnami6800::Resetting..." << endl;
-		BotnamiCPU::init();
+		init();
 	    }
 
 	    int executeinstr(uint8_t instr);
@@ -216,8 +216,7 @@ namespace botnami
 
 	    void init()
 	    {
-		BotnamiCPU::init();
-		status_reg = 0x41;
+		init_6809();
 		cout << "Botnami6809::Initialized" << endl;
 	    }
 
@@ -234,17 +233,127 @@ namespace botnami
 	    }
 
 	    int executeinstr(uint8_t instr);
+
+	protected:
+	    void init_6809()
+	    {
+		BotnamiCPU::init();
+		status_reg = 0x41;
+	    }
     };
 
-    class BOTNAMI_API BotnamiKonami : public BotnamiCPU
+    class BOTNAMI_API Botnami6309 : public BotnamiCPU
     {
 	public:
-	    BotnamiKonami()
+	    Botnami6309();
+	    virtual ~Botnami6309();
+
+	    void init()
+	    {
+		init_6309();
+		cout << "Botnami6309::Initialized" << endl;
+	    }
+
+	    void shutdown()
+	    {
+		cout << "Botnami6309::Shutting down..." << endl;
+		BotnamiCPU::shutdown();
+	    }
+
+	    void reset()
+	    {
+		cout << "Botnami6309::Resetting..." << endl;
+		init();
+	    }
+
+	    int executeinstr(uint8_t instr);
+
+	protected:
+	    void init_6309()
+	    {
+		BotnamiCPU::init();
+		status_reg = 0x41;
+		reg_md = 0;
+	    }
+
+	private:
+	    bool is_native_mode()
+	    {
+		return testbit(reg_md, 0);
+	    }
+
+	    uint8_t reg_md = 0;
+    };
+
+    class BOTNAMI_API BotnamiKonami1 : public Botnami6809
+    {
+	public:
+	    BotnamiKonami1()
 	    {
 
 	    }
 
-	    ~BotnamiKonami()
+	    ~BotnamiKonami1()
+	    {
+
+	    }
+
+	    void init()
+	    {
+		Botnami6809::init_6809();
+		enc_boundary = 0;
+		cout << "BotnamiKonami1::Initialized" << endl;
+	    }
+
+	    void shutdown()
+	    {
+		cout << "BotnamiKonami1::Shutting down..." << endl;
+		BotnamiCPU::shutdown();
+	    }
+
+	    void reset()
+	    {
+		cout << "BotnamiKonami1::Resetting..." << endl;
+		init();
+	    }
+
+	    void setEncryptionBoundary(uint16_t val)
+	    {
+		enc_boundary = val;
+	    }
+
+	    uint8_t readOpcode(uint16_t addr)
+	    {
+		uint8_t opcode = BotnamiCPU::readOpcode(addr);
+
+		if (addr < enc_boundary)
+		{
+		    return opcode;
+		}
+
+		uint8_t xor_mask = 0x00;
+
+		xor_mask |= (!testbit(addr, 3) << 1);
+		xor_mask |= (testbit(addr, 3) << 3);
+		xor_mask |= (!testbit(addr, 1) << 5);
+		xor_mask |= (testbit(addr, 1) << 7);
+
+		return (opcode ^ xor_mask);
+	    }
+
+	private:
+	    uint16_t enc_boundary = 0;
+    };
+
+    class BOTNAMI_API BotnamiKonami2 : public BotnamiCPU
+    {
+	public:
+	    BotnamiKonami2()
+	    {
+
+	    }
+
+	    ~BotnamiKonami2()
 	    {
 
 	    }
@@ -252,22 +361,27 @@ namespace botnami
 	    void init()
 	    {
 		BotnamiCPU::init();
-		cout << "BotnamiKonami::Initialized" << endl;
+		cout << "BotnamiKonami2::Initialized" << endl;
 	    }
 
 	    void shutdown()
 	    {
-		cout << "BotnamiKonami::Shutting down..." << endl;
+		cout << "BotnamiKonami2::Shutting down..." << endl;
 		BotnamiCPU::shutdown();
 	    }
 
 	    void reset()
 	    {
-		cout << "BotnamiKonami::Resetting..." << endl;
+		cout << "BotnamiKonami2::Resetting..." << endl;
 		BotnamiCPU::init();
 	    }
 
 	    int executeinstr(uint8_t instr);
+
+	private:
+	    uint16_t extended_address = 0;
+
+	    int indexed_mode();
     };
 };
 

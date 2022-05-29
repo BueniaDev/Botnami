@@ -23,6 +23,7 @@ set(BOTNAMI_SOURCES
 	Botnami/botnami.cpp
 	Botnami/botnami6800.cpp
 	Botnami/botnami6809.cpp
+	Botnami/botnami6309.cpp
 	Botnami/botnamikonami.cpp)
 
 add_library(botnami ${BOTNAMI_SOURCES} ${BOTNAMI_HEADERS})

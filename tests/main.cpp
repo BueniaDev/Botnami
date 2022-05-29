@@ -5,20 +5,20 @@ using namespace utest;
 using namespace botnami;
 using namespace std;
 
-class BotnamiTest6809 : public BotnamiInterface
+class BotnamiTestCPU : public BotnamiInterface
 {
     public:
-	BotnamiTest6809(Botnami6809 &cb) : core(cb)
+	BotnamiTestCPU(BotnamiCPU &cb) : core(cb)
 	{
 	    core.setinterface(*this);
 	}
 
-	~BotnamiTest6809()
+	~BotnamiTestCPU()
 	{
 
 	}
 
-	void init_code(vector<uint8_t> code, uint16_t start_addr = 0x4000)
+	void init_code(vector<uint8_t> code, uint16_t start_addr)
 	{
 	    memory.resize(0x10000, 0);
 	    copy(code.begin(), code.end(), (memory.begin() + start_addr));
@@ -50,7 +50,7 @@ class BotnamiTest6809 : public BotnamiInterface
 	}
 
     private:
-	Botnami6809 &core;
+	BotnamiCPU &core;
 
 	vector<uint8_t> memory;
 };
@@ -124,10 +124,10 @@ class BotnamiTest
 
 	}
 
-	void init(vector<uint8_t> code)
+	void init(vector<uint8_t> code, uint16_t start_addr = 0x4000)
 	{
-	    test = new BotnamiTest6809(core);
-	    test->init_code(code);
+	    test = new BotnamiTestCPU(core);
+	    test->init_code(code, start_addr);
 	}
 
 	void shutdown()
@@ -158,8 +158,59 @@ class BotnamiTest
 	}
 
     private:
-	BotnamiTest6809 *test = NULL;
+	BotnamiTestCPU *test = NULL;
 	Botnami6809 core;
+};
+
+class BotnamiKonami1Test
+{
+    public:
+	BotnamiKonami1Test()
+	{
+	    
+	}
+
+	~BotnamiKonami1Test()
+	{
+
+	}
+
+	void init(vector<uint8_t> code, uint16_t start_addr = 0x4000)
+	{
+	    test = new BotnamiTestCPU(core);
+	    test->init_code(code, start_addr);
+	}
+
+	void shutdown()
+	{
+	    if (test != NULL)
+	    {
+		test->shutdown();
+		test = NULL;
+	    }
+	}
+
+	void run(int num_instrs = 1)
+	{
+	    if (test == NULL)
+	    {
+		return;
+	    }
+
+	    for (int i = 0; i < num_instrs; i++)
+	    {
+		test->run_instr();
+	    }
+	}
+
+	BotnamiKonami1 &getCore()
+	{
+	    return core;
+	}
+
+    private:
+	BotnamiTestCPU *test = NULL;
+	BotnamiKonami1 core;
 };
 
 #include "tests.inl"
