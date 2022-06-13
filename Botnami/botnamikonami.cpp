@@ -107,7 +107,7 @@ namespace botnami
 	return cycles;
     }
 
-    void Botnami6809::debugoutput(bool print_disassembly)
+    void BotnamiKonami2::debugoutput(bool print_disassembly)
     {
 	cout << "PC: " << hex << int(status.pc) << endl;
 	cout << "CC: " << hex << int(status.status_reg) << endl;
