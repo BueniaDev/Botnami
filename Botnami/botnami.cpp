@@ -154,16 +154,15 @@ namespace botnami
     int BotnamiCPU::executenextinstr()
     {
 	uint8_t opcode = readOpcode();
-	return executeinstr(opcode);
+	int cycles = executeinstr(opcode);
+	setStatus();
+	return cycles;
     }
 
     void BotnamiCPU::debugoutput(bool print_disassembly)
     {
-	cout << "PC: " << hex << int(pc) << endl;
-	cout << "CC: " << hex << int(status_reg) << endl;
-	cout << "A: " << hex << int(rega) << endl;
-	cout << "B: " << hex << int(regb) << endl;
-	cout << endl;
+	(void)print_disassembly;
+	return;
     }
 
     int BotnamiCPU::executeinstr(uint8_t instr)

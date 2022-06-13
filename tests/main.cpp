@@ -35,8 +35,8 @@ class BotnamiTestCPU : public BotnamiInterface
 
 	void run_instr()
 	{
-	    core.debugoutput();
 	    core.executenextinstr();
+	    core.debugoutput();
 	}
 
 	uint8_t readByte(uint16_t addr)
@@ -67,7 +67,7 @@ class ladybot_assert
 			return;
 		}
 		std::ostringstream err;
-		err << "Ladybot expected " << expected << ", but instead she got " << actual;
+		err << "Ladybot expected " << int(expected) << ", but instead she got " << int(actual);
 		fail(err.str(), file_name, line_num);
 	}
 
@@ -80,7 +80,7 @@ class ladybot_assert
 		}
 
 		std::ostringstream err;
-		err << "Ladybot expected " << expected << ", but instead she got " << actual;
+		err << "Ladybot expected " << int(expected) << ", but instead she got " << int(actual);
 		fail(err.str(), file_name, line_num);
 	}
 

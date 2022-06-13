@@ -20,6 +20,8 @@
 using namespace botnami;
 using namespace std;
 
+// Motorola 6809 opcode logic (WIP)
+
 namespace botnami
 {
     int Botnami6809::executeinstr(uint8_t instr)
@@ -71,5 +73,15 @@ namespace botnami
 	}
 
 	return cycles;
+    }
+
+    void Botnami6809::debugoutput(bool print_disassembly)
+    {
+	cout << "PC: " << hex << int(status.pc) << endl;
+	cout << "CC: " << hex << int(status.status_reg) << endl;
+	cout << "A: " << hex << int(status.rega) << endl;
+	cout << "B: " << hex << int(status.regb) << endl;
+	cout << "D: " << hex << int(status.regd) << endl;
+	cout << endl;
     }
 };

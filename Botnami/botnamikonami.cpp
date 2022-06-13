@@ -50,6 +50,7 @@ namespace botnami
 	if (testbit(opcode, 3))
 	{
 	    cout << "Indirect mode unimplemented" << endl;
+	    exit(0);
 	}
 
 	extended_address = address;
@@ -69,10 +70,50 @@ namespace botnami
 		cycles = 2;
 	    }
 	    break; // LDA
+	    case 0x11:
+	    {
+		regb = getimmByte();
+		set_nz(regb);
+		cycles = 2;
+	    }
+	    break; // LDB
+	    case 0x3A:
+	    {
+		int index_cycles = indexed_mode();
+		set_nz(rega);
+		writeByte(extended_address, rega);
+		cycles = (2 + index_cycles);
+	    }
+	    break; // STA indexed
+	    case 0x3B:
+	    {
+		int index_cycles = indexed_mode();
+		set_nz(regb);
+		writeByte(extended_address, regb);
+		cycles = (2 + index_cycles);
+	    }
+	    break; // STB indexed
+	    case 0x40:
+	    {
+		uint16_t value = getimmWord();
+		setRegD(value);
+		set_nz(value);
+		cycles = 3;
+	    }
+	    break; // LDD imm16
 	    default: unrecognizedinstr(instr); break;
 	}
 
 	return cycles;
     }
 
+    void Botnami6809::debugoutput(bool print_disassembly)
+    {
+	cout << "PC: " << hex << int(status.pc) << endl;
+	cout << "CC: " << hex << int(status.status_reg) << endl;
+	cout << "A: " << hex << int(status.rega) << endl;
+	cout << "B: " << hex << int(status.regb) << endl;
+	cout << "D: " << hex << int(status.regd) << endl;
+	cout << endl;
+    }
 };

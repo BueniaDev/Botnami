@@ -75,10 +75,15 @@ namespace botnami
 	    virtual void reset();
 
 	    int executenextinstr();
-	    void debugoutput(bool print_disassembly = false);
+	    virtual void debugoutput(bool print_disassembly = false);
 	    // size_t disassmebleinstr(ostream &stream, uint32_t pc);
 
 	    void setinterface(BotnamiInterface &cb);
+
+	    bool is_sign()
+	    {
+		return testbit(status_reg, 3);
+	    }
 
 	    bool is_zero()
 	    {
@@ -114,6 +119,11 @@ namespace botnami
 	    uint8_t regb = 0;
 	    uint8_t status_reg = 0;
 	    uint16_t pc = 0;
+
+	    virtual void setStatus()
+	    {
+		return;
+	    }
 
 	    void set_sign(bool is_set)
 	    {
@@ -208,6 +218,15 @@ namespace botnami
 	    int executeinstr(uint8_t instr);
     };
 
+    struct Botnami6809Status
+    {
+	uint8_t rega;
+	uint8_t regb;
+	uint8_t status_reg;
+	uint16_t pc;
+	uint16_t regd;
+    };
+
     class BOTNAMI_API Botnami6809 : public BotnamiCPU
     {
 	public:
@@ -233,12 +252,41 @@ namespace botnami
 	    }
 
 	    int executeinstr(uint8_t instr);
+	    void debugoutput(bool print_disassembly = false);
+
+	    Botnami6809Status getStatus()
+	    {
+		return status;
+	    }
 
 	protected:
 	    void init_6809()
 	    {
 		BotnamiCPU::init();
 		status_reg = 0x41;
+	    }
+
+	    void setStatus()
+	    {
+		status.rega = rega;
+		status.regb = regb;
+		status.status_reg = status_reg;
+		status.pc = pc;
+		status.regd = getRegD();
+	    }
+
+	    Botnami6809Status status;
+
+	private:
+	    uint16_t getRegD()
+	    {
+		return ((rega << 8) | regb);
+	    }
+
+	    void setRegD(uint16_t value)
+	    {
+		rega = (value >> 8);
+		regb = (value & 0xFF);
 	    }
     };
 
@@ -377,11 +425,39 @@ namespace botnami
 	    }
 
 	    int executeinstr(uint8_t instr);
+	    void debugoutput(bool print_disassembly = false);
+
+	    Botnami6809Status getStatus()
+	    {
+		return status;
+	    }
 
 	private:
 	    uint16_t extended_address = 0;
 
+	    void setStatus()
+	    {
+		status.rega = rega;
+		status.regb = regb;
+		status.status_reg = status_reg;
+		status.pc = pc;
+		status.regd = getRegD();
+	    }
+
+	    Botnami6809Status status;
+
 	    int indexed_mode();
+
+	    uint16_t getRegD()
+	    {
+		return ((rega << 8) | regb);
+	    }
+
+	    void setRegD(uint16_t value)
+	    {
+		rega = (value >> 8);
+		regb = (value & 0xFF);
+	    }
     };
 };
 

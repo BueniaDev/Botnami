@@ -5,12 +5,12 @@ if [[ ! -f "libbotnami.a" ]]; then
 	exit 1
 fi
 
-mkdir -p dist
+# mkdir -p dist
 
-if [ -d "Vecnami" ]; then
-	for lib in $(ldd Vecnami/vecnami.exe | grep mingw | sed "s/.*=> //" | sed "s/(.*)//"); do
-		cp "${lib}" dist
-	done
-	cp Vecnami/vecnami.exe dist
-fi
+# if [ -d "Vecnami" ]; then
+# 	for lib in $(ldd Vecnami/vecnami.exe | grep mingw | sed "s/.*=> //" | sed "s/(.*)//"); do
+# 		cp "${lib}" dist
+# 	done
+# 	cp Vecnami/vecnami.exe dist
+# fi
 

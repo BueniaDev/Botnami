@@ -20,6 +20,8 @@
 using namespace botnami;
 using namespace std;
 
+// Hitachi HD6309 opcode logic (WIP)
+
 namespace botnami
 {
     int Botnami6309::executeinstr(uint8_t instr)
