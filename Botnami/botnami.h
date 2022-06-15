@@ -117,8 +117,13 @@ namespace botnami
 
 	    uint8_t rega = 0;
 	    uint8_t regb = 0;
+	    uint16_t regx = 0;
+	    uint16_t regy = 0;
+	    uint8_t regdp = 0;
 	    uint8_t status_reg = 0;
 	    uint16_t pc = 0;
+	    uint16_t ssp = 0;
+	    uint16_t usp = 0;
 
 	    virtual void setStatus()
 	    {
@@ -170,6 +175,145 @@ namespace botnami
 	    void cmp8(uint8_t source, uint8_t operand)
 	    {
 		sub_internal8(source, operand);
+	    }
+
+	    int pushs()
+	    {
+		uint8_t stack_reg = getimmByte();
+
+		int cycles = 5;
+
+		if (testbit(stack_reg, 7))
+		{
+		    pushsp16(pc);
+		    cycles += 2;
+		}
+
+		if (testbit(stack_reg, 6))
+		{
+		    pushsp16(usp);
+		    cycles += 2;
+		}
+
+		if (testbit(stack_reg, 5))
+		{
+		    pushsp16(regy);
+		    cycles += 2;
+		}
+
+		if (testbit(stack_reg, 4))
+		{
+		    pushsp16(regx);
+		    cycles += 2;
+		}
+
+		if (testbit(stack_reg, 3))
+		{
+		    pushsp(regdp);
+		    cycles += 1;
+		}
+
+		if (testbit(stack_reg, 2))
+		{
+		    pushsp(regb);
+		    cycles += 1;
+		}
+
+		if (testbit(stack_reg, 1))
+		{
+		    pushsp(rega);
+		    cycles += 1;
+		}
+
+		if (testbit(stack_reg, 0))
+		{
+		    pushsp(status_reg);
+		    cycles += 1;
+		}
+
+		return cycles;
+	    }
+
+	    int pulls()
+	    {
+		uint8_t stack_reg = getimmByte();
+		int cycles = 4;
+
+		if (testbit(stack_reg, 0))
+		{
+		    status_reg = pullsp();
+		    cycles += 1;
+		}
+
+		if (testbit(stack_reg, 1))
+		{
+		    rega = pullsp();
+		    cycles += 1;
+		}
+
+		if (testbit(stack_reg, 2))
+		{
+		    regb = pullsp();
+		    cycles += 1;
+		}
+
+		if (testbit(stack_reg, 3))
+		{
+		    regdp = pullsp();
+		    cycles += 1;
+		}
+
+		if (testbit(stack_reg, 4))
+		{
+		    regx = pullsp16();
+		    cycles += 2;
+		}
+
+		if (testbit(stack_reg, 5))
+		{
+		    regy = pullsp16();
+		    cycles += 2;
+		}
+
+		if (testbit(stack_reg, 6))
+		{
+		    usp = pullsp16();
+		    cycles += 2;
+		}
+
+		if (testbit(stack_reg, 7))
+		{
+		    pc = pullsp16();
+		    cycles += 2;
+		}
+
+		return cycles;
+	    }
+
+	    void pushsp(uint8_t val)
+	    {
+		ssp -= 1;
+		writeByte(ssp, val);
+	    }
+
+	    uint8_t pullsp()
+	    {
+		uint8_t value = readByte(ssp);
+		ssp += 1;
+		return value;
+	    }
+
+	    void pushsp16(uint16_t val)
+	    {
+		pushsp((val & 0xFF));
+		pushsp((val >> 8));
+	    }
+
+	    uint16_t pullsp16()
+	    {
+		uint8_t high = pullsp();
+		uint8_t low = pullsp();
+		return ((high << 8) | low);
 	    }
 
 	    virtual int executeinstr(uint8_t instr);

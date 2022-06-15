@@ -36,6 +36,13 @@ namespace botnami
 		cycles = 2;
 	    }
 	    break; // DECA
+	    case 0x4F:
+	    {
+		set_nz<uint8_t>(0);
+		rega = 0;
+		cycles = 2;
+	    }
+	    break; // CLRA
 	    case 0x5A:
 	    case 0x5B:
 	    {
@@ -43,6 +50,13 @@ namespace botnami
 		cycles = 2;
 	    }
 	    break; // DECB
+	    case 0x5F:
+	    {
+		set_nz<uint8_t>(0);
+		regb = 0;
+		cycles = 2;
+	    }
+	    break; // CLRB
 	    case 0x81:
 	    {
 		cmp8(rega, getimmByte());
@@ -62,6 +76,13 @@ namespace botnami
 		cycles = 2;
 	    }
 	    break; // ADDA
+	    case 0x8E:
+	    {
+		regx = getimmWord();
+		set_nz(regx);
+		cycles = 3;
+	    }
+	    break; // LDX imm16
 	    case 0xC6:
 	    {
 		regb = getimmByte();

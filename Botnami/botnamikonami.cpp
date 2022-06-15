@@ -63,6 +63,16 @@ namespace botnami
 
 	switch (instr)
 	{
+	    case 0x0C:
+	    {
+		cycles = pushs();
+	    }
+	    break; // PUSHS
+	    case 0x0E:
+	    {
+		cycles = pulls();
+	    }
+	    break; // PULLS
 	    case 0x10:
 	    {
 		rega = getimmByte();
@@ -101,6 +111,66 @@ namespace botnami
 		cycles = 3;
 	    }
 	    break; // LDD imm16
+	    case 0x42:
+	    {
+		regx = getimmWord();
+		set_nz(regx);
+		cycles = 3;
+	    }
+	    break; // LDX imm16
+	    case 0x43:
+	    {
+		int index_cycles = indexed_mode();
+		regx = readWord(extended_address);
+		set_nz(regx);
+		cycles = (3 + index_cycles);
+	    }
+	    break; // LDX indexed
+	    case 0x44:
+	    {
+		regy = getimmWord();
+		set_nz(regy);
+		cycles = 3;
+	    }
+	    break; // LDY imm16
+	    case 0x45:
+	    {
+		int index_cycles = indexed_mode();
+		regy = readWord(extended_address);
+		set_nz(regy);
+		cycles = (3 + index_cycles);
+	    }
+	    break; // LDY indexed
+	    case 0x48:
+	    {
+		uint16_t value = getimmWord();
+		ssp = value;
+		set_nz(value);
+		cycles = 3;
+	    }
+	    break; // LDS imm16
+	    case 0x80:
+	    {
+		set_nz<uint8_t>(0);
+		rega = 0;
+		cycles = 2;
+	    }
+	    break; // CLRA
+	    case 0x81:
+	    {
+		set_nz<uint8_t>(0);
+		regb = 0;
+		cycles = 2;
+	    }
+	    break; // CLRB
+	    case 0x82:
+	    {
+		int index_cycles = indexed_mode();
+		set_nz<uint8_t>(0);
+		writeByte(extended_address, 0);
+		cycles = (4 + index_cycles);
+	    }
+	    break; // CLR indexed
 	    default: unrecognizedinstr(instr); break;
 	}
 
