@@ -187,10 +187,15 @@ namespace botnami
     void BotnamiKonami2::debugoutput(bool print_disassembly)
     {
 	cout << "PC: " << hex << int(status.pc) << endl;
+	cout << "S: " << hex << int(status.ssp) << endl;
 	cout << "CC: " << hex << int(status.status_reg) << endl;
+	cout << "DP: " << hex << int(status.regdp) << endl;
 	cout << "A: " << hex << int(status.rega) << endl;
 	cout << "B: " << hex << int(status.regb) << endl;
 	cout << "D: " << hex << int(status.regd) << endl;
+	cout << "X: " << hex << int(status.regx) << endl;
+	cout << "Y: " << hex << int(status.regy) << endl;
+	cout << "U: " << hex << int(status.usp) << endl;
 	cout << endl;
     }
 };
