@@ -56,6 +56,9 @@ namespace botnami
     {
 	rega = 0;
 	regb = 0;
+	regx = 0;
+	regy = 0;
+	regdp = 0;
 	status_reg = 0;
 	pc = readWord(0xFFFE);
     }

@@ -367,8 +367,13 @@ namespace botnami
 	uint8_t rega;
 	uint8_t regb;
 	uint8_t status_reg;
-	uint16_t pc;
 	uint16_t regd;
+	uint8_t regdp;
+	uint16_t regx;
+	uint16_t regy;
+	uint16_t usp;
+	uint16_t ssp;
+	uint16_t pc;
     };
 
     class BOTNAMI_API Botnami6809 : public BotnamiCPU
@@ -407,16 +412,22 @@ namespace botnami
 	    void init_6809()
 	    {
 		BotnamiCPU::init();
-		status_reg = 0x41;
+		status_reg = 0x50;
+		setStatus();
 	    }
 
 	    void setStatus()
 	    {
 		status.rega = rega;
 		status.regb = regb;
+		status.regd = getRegD();
+		status.regx = regx;
+		status.regy = regy;
+		status.regdp = regdp;
 		status.status_reg = status_reg;
 		status.pc = pc;
-		status.regd = getRegD();
+		status.usp = usp;
+		status.ssp = ssp;
 	    }
 
 	    Botnami6809Status status;
@@ -464,7 +475,7 @@ namespace botnami
 	    void init_6309()
 	    {
 		BotnamiCPU::init();
-		status_reg = 0x41;
+		status_reg = 0x50;
 		reg_md = 0;
 	    }
 
@@ -553,6 +564,8 @@ namespace botnami
 	    void init()
 	    {
 		BotnamiCPU::init();
+		status_reg = 0x50;
+		setStatus();
 		cout << "BotnamiKonami2::Initialized" << endl;
 	    }
 
@@ -583,9 +596,14 @@ namespace botnami
 	    {
 		status.rega = rega;
 		status.regb = regb;
+		status.regd = getRegD();
+		status.regx = regx;
+		status.regy = regy;
+		status.regdp = regdp;
 		status.status_reg = status_reg;
 		status.pc = pc;
-		status.regd = getRegD();
+		status.usp = usp;
+		status.ssp = ssp;
 	    }
 
 	    Botnami6809Status status;
