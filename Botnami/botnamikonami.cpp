@@ -87,6 +87,30 @@ namespace botnami
 		cycles += 3;
 	    }
 	    break;
+	    case 0x24:
+	    case 0x34:
+	    case 0x54:
+	    case 0x64:
+	    case 0x74:
+	    {
+		extended_address = get_ireg(opcode);
+		int8_t offs = getimmByte();
+		address = (extended_address + offs);
+		cycles += 2;
+	    }
+	    break;
+	    case 0x25:
+	    case 0x35:
+	    case 0x55:
+	    case 0x65:
+	    case 0x75:
+	    {
+		extended_address = get_ireg(opcode);
+		int16_t offs = getimmWord();
+		address = (extended_address + offs);
+		cycles += 4;
+	    }
+	    break;
 	    case 0x26:
 	    case 0x36:
 	    case 0x56:
@@ -103,6 +127,39 @@ namespace botnami
 		cycles += 1;
 	    }
 	    break;
+	    case 0xA0:
+	    case 0xB0:
+	    case 0xD0:
+	    case 0xE0:
+	    case 0xF0:
+	    {
+		int8_t offs = rega;
+		address = (get_ireg(opcode) + offs);
+		cycles += 1;
+	    }
+	    break;
+	    case 0xA1:
+	    case 0xB1:
+	    case 0xD1:
+	    case 0xE1:
+	    case 0xF1:
+	    {
+		int8_t offs = regb;
+		address = (get_ireg(opcode) + offs);
+		cycles += 1;
+	    }
+	    break;
+	    case 0xA7:
+	    case 0xB7:
+	    case 0xD7:
+	    case 0xE7:
+	    case 0xF7:
+	    {
+		int16_t offs = getRegD();
+		address = (get_ireg(opcode) + offs);
+		cycles += 4;
+	    }
+	    break;
 	    default:
 	    {
 		cout << "Unrecognized indexed opcode of " << hex << int(opcode) << endl;
@@ -113,8 +170,9 @@ namespace botnami
 
 	if (testbit(opcode, 3))
 	{
-	    cout << "Indirect mode unimplemented" << endl;
-	    exit(0);
+	    extended_address = address;
+	    address = readWord(extended_address);
+	    cycles += 2;
 	}
 
 	extended_address = address;
@@ -183,6 +241,13 @@ namespace botnami
 		cycles = 2;
 	    }
 	    break; // LDB
+	    case 0x12:
+	    {
+		int index_cycles = indexed_mode();
+		rega = readByte(extended_address);
+		cycles = (2 + index_cycles);
+	    }
+	    break; // LDA indexed
 	    case 0x38:
 	    {
 		uint8_t value = getimmByte();
@@ -260,6 +325,26 @@ namespace botnami
 		cycles = 3;
 	    }
 	    break; // LDS imm16
+	    case 0x60:
+	    {
+		cycles = branch(true);
+	    }
+	    break; // BRA
+	    case 0x63:
+	    {
+		cycles = branch(is_cond_ne());
+	    }
+	    break; // BNE
+	    case 0x70:
+	    {
+		cycles = branch(false);
+	    }
+	    break; // BNV
+	    case 0x73:
+	    {
+		cycles = branch(is_cond_eq());
+	    }
+	    break; // BEQ
 	    case 0x80:
 	    {
 		set_nz<uint8_t>(0);
@@ -282,6 +367,11 @@ namespace botnami
 		cycles = (4 + index_cycles);
 	    }
 	    break; // CLR indexed
+	    case 0xAC:
+	    {
+		cycles = decbjnz();
+	    }
+	    break; // DECB, JNZ
 	    default: unrecognizedinstr(instr); break;
 	}
 

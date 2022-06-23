@@ -166,6 +166,28 @@ namespace botnami
 		set_z(data);
 	    }
 
+	    bool is_cond_ne()
+	    {
+		return !is_zero();
+	    }
+
+	    bool is_cond_eq()
+	    {
+		return is_zero();
+	    }
+
+	    int branch(bool is_cond = true)
+	    {
+		int8_t offs = getimmByte();
+
+		if (is_cond)
+		{
+		    pc += offs;
+		}
+
+		return 3;
+	    }
+
 	    uint8_t add_internal8(uint8_t source, uint8_t operand, bool is_carry = false)
 	    {
 		uint16_t result = (source + operand + is_carry);
@@ -682,6 +704,13 @@ namespace botnami
 		    case 0x60: ssp -= dec; break;
 		    case 0x70: pc -= dec; break;
 		}
+	    }
+
+	    int decbjnz()
+	    {
+		regb = dec_internal8(regb);
+		branch(is_cond_ne());
+		return 4;
 	    }
     };
 };
