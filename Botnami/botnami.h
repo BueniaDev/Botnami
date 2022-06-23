@@ -147,11 +147,23 @@ namespace botnami
 	    }
 
 	    template<typename T>
-	    void set_nz(T data)
+	    void set_n(T data)
 	    {
 		int sign_bit = ((sizeof(T) * 8) - 1);
 		set_sign(testbit(data, sign_bit));
+	    }
+
+	    template<typename T>
+	    void set_z(T data)
+	    {
 		set_zero(data == 0);
+	    }
+
+	    template<typename T>
+	    void set_nz(T data)
+	    {
+		set_n(data);
+		set_z(data);
 	    }
 
 	    uint8_t add_internal8(uint8_t source, uint8_t operand, bool is_carry = false)
@@ -627,6 +639,49 @@ namespace botnami
 	    {
 		rega = (value >> 8);
 		regb = (value & 0xFF);
+	    }
+
+	    uint16_t get_ireg(uint8_t instr)
+	    {
+		uint16_t data = 0;
+		switch (instr & 0x70)
+		{
+		    case 0x20: data = regx; break;
+		    case 0x30: data = regy; break;
+		    case 0x50: data = usp; break;
+		    case 0x60: data = ssp; break;
+		    case 0x70: data = pc; break;
+		}
+
+		return data;
+	    }
+
+	    void inc_ireg(uint8_t instr, bool is_double_inc = false)
+	    {
+		int inc = (is_double_inc) ? 2 : 1;
+
+		switch (instr & 0x70)
+		{
+		    case 0x20: regx += inc; break;
+		    case 0x30: regy += inc; break;
+		    case 0x50: usp += inc; break;
+		    case 0x60: ssp += inc; break;
+		    case 0x70: pc += inc; break;
+		}
+	    }
+
+	    void dec_ireg(uint8_t instr, bool is_double_dec = false)
+	    {
+		int dec = (is_double_dec) ? 2 : 1;
+
+		switch (instr & 0x70)
+		{
+		    case 0x20: regx -= dec; break;
+		    case 0x30: regy -= dec; break;
+		    case 0x50: usp -= dec; break;
+		    case 0x60: ssp -= dec; break;
+		    case 0x70: pc -= dec; break;
+		}
 	    }
     };
 };

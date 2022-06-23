@@ -26,7 +26,7 @@ namespace botnami
 {
     int BotnamiKonami2::indexed_mode()
     {
-	int cycles = 0;
+	int cycles = 1;
 	uint8_t opcode = getimmByte();
 
 	uint16_t address = 0;
@@ -36,14 +36,71 @@ namespace botnami
 	    case 0x07:
 	    {
 		address = getimmWord();
-		cycles = 3;
+		cycles += 2;
+	    }
+	    break;
+	    case 0x20:
+	    case 0x30:
+	    case 0x50:
+	    case 0x60:
+	    case 0x70:
+	    {
+		// Auto-increment
+		address = get_ireg(opcode);
+		inc_ireg(opcode);
+		cycles += 2;
+	    }
+	    break;
+	    case 0x21:
+	    case 0x31:
+	    case 0x51:
+	    case 0x61:
+	    case 0x71:
+	    {
+		// Double auto-increment
+		address = get_ireg(opcode);
+		inc_ireg(opcode, true);
+		cycles += 3;
+	    }
+	    break;
+	    case 0x22:
+	    case 0x32:
+	    case 0x52:
+	    case 0x62:
+	    case 0x72:
+	    {
+		// Auto-decrement
+		dec_ireg(opcode);
+		address = get_ireg(opcode);
+		cycles += 2;
+	    }
+	    break;
+	    case 0x23:
+	    case 0x33:
+	    case 0x53:
+	    case 0x63:
+	    case 0x73:
+	    {
+		// Double auto-decrement
+		dec_ireg(opcode, true);
+		address = get_ireg(opcode);
+		cycles += 3;
+	    }
+	    break;
+	    case 0x26:
+	    case 0x36:
+	    case 0x56:
+	    case 0x66:
+	    case 0x76:
+	    {
+		address = get_ireg(opcode);
 	    }
 	    break;
 	    case 0xC4:
 	    {
 		uint8_t lsb = getimmByte();
 		address = ((regdp << 8) | lsb);
-		cycles = 2;
+		cycles += 1;
 	    }
 	    break;
 	    default:
@@ -70,6 +127,38 @@ namespace botnami
 
 	switch (instr)
 	{
+	    case 0x08:
+	    {
+		int index_cycles = indexed_mode();
+		regx = extended_address;
+		set_z(regx);
+		cycles = (2 + index_cycles);
+	    }
+	    break; // LEA x
+	    case 0x09:
+	    {
+		int index_cycles = indexed_mode();
+		regy = extended_address;
+		set_z(regy);
+		cycles = (2 + index_cycles);
+	    }
+	    break; // LEA y
+	    case 0x0A:
+	    {
+		int index_cycles = indexed_mode();
+		usp = extended_address;
+		set_z(usp);
+		cycles = (2 + index_cycles);
+	    }
+	    break; // LEA u
+	    case 0x0B:
+	    {
+		int index_cycles = indexed_mode();
+		ssp = extended_address;
+		set_z(ssp);
+		cycles = (2 + index_cycles);
+	    }
+	    break; // LEA s
 	    case 0x0C:
 	    {
 		cycles = pushs();
