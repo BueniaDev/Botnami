@@ -154,6 +154,14 @@ namespace botnami
 	return data;
     }
 
+    void BotnamiCPU::setLines(uint8_t data)
+    {
+	if (inter)
+	{
+	    inter->setLines(data);
+	}
+    }
+
     int BotnamiCPU::executenextinstr()
     {
 	uint8_t opcode = readOpcode();

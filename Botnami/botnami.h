@@ -62,6 +62,12 @@ namespace botnami
 		cout << "Writing value of " << hex << int(data) << " to address of " << hex << int(addr) << endl;
 		exit(0);
 	    }
+
+	    virtual void setLines(uint8_t data)
+	    {
+		cout << "Writing value of " << hex << int(data) << " to KONAMI-2 lines callback" << endl;
+		exit(0);
+	    }
     };
 
     class BOTNAMI_API BotnamiCPU
@@ -328,6 +334,8 @@ namespace botnami
 
 	    uint8_t getimmByte();
 	    uint16_t getimmWord();
+
+	    void setLines(uint8_t data);
 
 	    void unrecognizedinstr(uint8_t instr);
 

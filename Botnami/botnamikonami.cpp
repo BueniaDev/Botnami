@@ -94,6 +94,13 @@ namespace botnami
 		cycles = 2;
 	    }
 	    break; // LDB
+	    case 0x38:
+	    {
+		uint8_t value = getimmByte();
+		setLines(value);
+		cycles = 2;
+	    }
+	    break; // SETLINES
 	    case 0x3A:
 	    {
 		int index_cycles = indexed_mode();
@@ -148,6 +155,14 @@ namespace botnami
 		cycles = (3 + index_cycles);
 	    }
 	    break; // LDY indexed
+	    case 0x46:
+	    {
+		uint16_t value = getimmWord();
+		usp = value;
+		set_nz(value);
+		cycles = 3;
+	    }
+	    break; // LDU imm16
 	    case 0x48:
 	    {
 		uint16_t value = getimmWord();
