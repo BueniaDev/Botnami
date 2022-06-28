@@ -278,6 +278,32 @@ namespace botnami
 		return 3;
 	    }
 
+	    int lbranch(bool is_cond = true)
+	    {
+		int16_t offs = getimmWord();
+
+		if (is_cond)
+		{
+		    pc += offs;
+		    return 6;
+		}
+
+		return 5;
+	    }
+
+	    int lbranchk(bool is_cond = true)
+	    {
+		int16_t offs = getimmWord();
+
+		if (is_cond)
+		{
+		    pc += offs;
+		    return 5;
+		}
+
+		return 4;
+	    }
+
 	    template<bool set_hc = true>
 	    uint8_t add_internal8(uint8_t source, uint8_t operand, bool is_carry = false)
 	    {
@@ -303,17 +329,20 @@ namespace botnami
 		return result;
 	    }
 
+	    uint8_t and_internal8(uint8_t source, uint8_t operand)
+	    {
+		uint8_t result = (source & operand);
+		set_overflow(false);
+		set_nz(result);
+		return result;
+	    }
+
 	    uint8_t lsr_internal8(uint8_t source)
 	    {
 		set_carry(testbit(source, 0));
 		uint8_t result = (source >> 1);
 		set_nz<uint8_t>(result);
 		return result;
-	    }
-
-	    uint8_t add8(uint8_t source, uint8_t operand)
-	    {
-		return add_internal8(source, operand);
 	    }
 
 	    uint8_t inc_internal8(uint8_t data)
@@ -341,9 +370,19 @@ namespace botnami
 		return result;
 	    }
 
+	    uint8_t add8(uint8_t source, uint8_t operand)
+	    {
+		return add_internal8(source, operand);
+	    }
+
 	    void cmp8(uint8_t source, uint8_t operand)
 	    {
 		sub_internal8(source, operand);
+	    }
+
+	    uint8_t and8(uint8_t source, uint8_t operand)
+	    {
+		return and_internal8(source, operand);
 	    }
 
 	    uint8_t lsr8(uint8_t source)
