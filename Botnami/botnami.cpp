@@ -176,6 +176,13 @@ namespace botnami
 	return;
     }
 
+    size_t BotnamiCPU::disassembleinstr(ostream &stream, size_t pc)
+    {
+	(void)pc;
+	stream << "unk";
+	return 0;
+    }
+
     int BotnamiCPU::executeinstr(uint8_t instr)
     {
 	unrecognizedinstr(instr);

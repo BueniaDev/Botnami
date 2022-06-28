@@ -230,14 +230,14 @@ namespace botnami
 	    case 0x10:
 	    {
 		rega = getimmByte();
-		set_nz(rega);
+		set_nzv(rega);
 		cycles = 2;
 	    }
 	    break; // LDA
 	    case 0x11:
 	    {
 		regb = getimmByte();
-		set_nz(regb);
+		set_nzv(regb);
 		cycles = 2;
 	    }
 	    break; // LDB
@@ -248,6 +248,28 @@ namespace botnami
 		cycles = (2 + index_cycles);
 	    }
 	    break; // LDA indexed
+	    case 0x34:
+	    {
+		uint8_t operand = getimmByte();
+		cmp8(rega, operand);
+		cycles = 2;
+	    }
+	    break; // CMPA imm
+	    case 0x35:
+	    {
+		uint8_t operand = getimmByte();
+		cmp8(regb, operand);
+		cycles = 2;
+	    }
+	    break; // CMPB imm
+	    case 0x36:
+	    {
+		int index_cycles = indexed_mode();
+		uint8_t operand = readByte(extended_address);
+		cmp8(rega, operand);
+		cycles = (2 + index_cycles);
+	    }
+	    break; // CMPA indexed
 	    case 0x38:
 	    {
 		uint8_t value = getimmByte();
@@ -258,7 +280,7 @@ namespace botnami
 	    case 0x3A:
 	    {
 		int index_cycles = indexed_mode();
-		set_nz(rega);
+		set_nzv(rega);
 		writeByte(extended_address, rega);
 		cycles = (2 + index_cycles);
 	    }
@@ -266,7 +288,7 @@ namespace botnami
 	    case 0x3B:
 	    {
 		int index_cycles = indexed_mode();
-		set_nz(regb);
+		set_nzv(regb);
 		writeByte(extended_address, regb);
 		cycles = (2 + index_cycles);
 	    }
@@ -275,14 +297,14 @@ namespace botnami
 	    {
 		uint16_t value = getimmWord();
 		setRegD(value);
-		set_nz(value);
+		set_nzv(value);
 		cycles = 3;
 	    }
 	    break; // LDD imm16
 	    case 0x42:
 	    {
 		regx = getimmWord();
-		set_nz(regx);
+		set_nzv(regx);
 		cycles = 3;
 	    }
 	    break; // LDX imm16
@@ -290,14 +312,14 @@ namespace botnami
 	    {
 		int index_cycles = indexed_mode();
 		regx = readWord(extended_address);
-		set_nz(regx);
+		set_nzv(regx);
 		cycles = (3 + index_cycles);
 	    }
 	    break; // LDX indexed
 	    case 0x44:
 	    {
 		regy = getimmWord();
-		set_nz(regy);
+		set_nzv(regy);
 		cycles = 3;
 	    }
 	    break; // LDY imm16
@@ -305,7 +327,7 @@ namespace botnami
 	    {
 		int index_cycles = indexed_mode();
 		regy = readWord(extended_address);
-		set_nz(regy);
+		set_nzv(regy);
 		cycles = (3 + index_cycles);
 	    }
 	    break; // LDY indexed
@@ -313,7 +335,7 @@ namespace botnami
 	    {
 		uint16_t value = getimmWord();
 		usp = value;
-		set_nz(value);
+		set_nzv(value);
 		cycles = 3;
 	    }
 	    break; // LDU imm16
@@ -321,7 +343,7 @@ namespace botnami
 	    {
 		uint16_t value = getimmWord();
 		ssp = value;
-		set_nz(value);
+		set_nzv(value);
 		cycles = 3;
 	    }
 	    break; // LDS imm16
@@ -330,31 +352,67 @@ namespace botnami
 		cycles = branch(true);
 	    }
 	    break; // BRA
+	    case 0x62:
+	    {
+		cycles = branch(is_cond_cc());
+	    }
+	    break; // BCC
 	    case 0x63:
 	    {
 		cycles = branch(is_cond_ne());
 	    }
 	    break; // BNE
+	    case 0x64:
+	    {
+		cycles = branch(is_cond_vc());
+	    }
+	    break; // BVC
+	    case 0x65:
+	    {
+		cycles = branch(is_cond_pl());
+	    }
+	    break; // BPL
 	    case 0x70:
 	    {
 		cycles = branch(false);
 	    }
 	    break; // BNV
+	    case 0x72:
+	    {
+		cycles = branch(is_cond_cs());
+	    }
+	    break; // BCS
 	    case 0x73:
 	    {
 		cycles = branch(is_cond_eq());
 	    }
 	    break; // BEQ
+	    case 0x74:
+	    {
+		cycles = branch(is_cond_vs());
+	    }
+	    break; // BVS
+	    case 0x75:
+	    {
+		cycles = branch(is_cond_mi());
+	    }
+	    break; // BMI
 	    case 0x80:
 	    {
-		set_nz<uint8_t>(0);
+		set_sign(false);
+		set_zero(true);
+		set_carry(false);
+		set_overflow(false);
 		rega = 0;
 		cycles = 2;
 	    }
 	    break; // CLRA
 	    case 0x81:
 	    {
-		set_nz<uint8_t>(0);
+		set_sign(false);
+		set_zero(true);
+		set_carry(false);
+		set_overflow(false);
 		regb = 0;
 		cycles = 2;
 	    }
@@ -362,11 +420,82 @@ namespace botnami
 	    case 0x82:
 	    {
 		int index_cycles = indexed_mode();
-		set_nz<uint8_t>(0);
+		set_sign(false);
+		set_zero(true);
+		set_carry(false);
+		set_overflow(false);
 		writeByte(extended_address, 0);
 		cycles = (4 + index_cycles);
 	    }
 	    break; // CLR indexed
+	    case 0x83:
+	    {
+		rega = com8(rega);
+		cycles = 2;
+	    }
+	    break; // COMA
+	    case 0x84:
+	    {
+		regb = com8(regb);
+		cycles = 2;
+	    }
+	    break; // COMB
+	    case 0x89:
+	    {
+		rega = inc_internal8(rega);
+		cycles = 2;
+	    }
+	    break; // INCA
+	    case 0x8A:
+	    {
+		regb = inc_internal8(regb);
+		cycles = 2;
+	    }
+	    break; // INCB
+	    case 0x8C:
+	    {
+		rega = dec_internal8(rega);
+		cycles = 2;
+	    }
+	    break; // DECA
+	    case 0x8D:
+	    {
+		regb = dec_internal8(regb);
+		cycles = 2;
+	    }
+	    break; // DECB
+	    case 0x90:
+	    {
+		set_nzv<uint8_t>(rega);
+		cycles = 4;
+	    }
+	    break; // TSTA
+	    case 0x91:
+	    {
+		set_nzv<uint8_t>(rega);
+		cycles = 4;
+	    }
+	    break; // TSTB
+	    case 0x92:
+	    {
+		int index_cycles = indexed_mode();
+		uint8_t operand = readByte(extended_address);
+		set_nzv<uint8_t>(operand);
+		cycles = (4 + index_cycles);
+	    }
+	    break; // TST indexed
+	    case 0x93:
+	    {
+		rega = lsr8(rega);
+		cycles = 2;
+	    }
+	    break; // LSRA
+	    case 0x94:
+	    {
+		regb = lsr8(regb);
+		cycles = 2;
+	    }
+	    break; // LSRB
 	    case 0xAC:
 	    {
 		cycles = decbjnz();
@@ -390,6 +519,422 @@ namespace botnami
 	cout << "X: " << hex << int(status.regx) << endl;
 	cout << "Y: " << hex << int(status.regy) << endl;
 	cout << "U: " << hex << int(status.usp) << endl;
+
+	uint8_t status_reg = status.status_reg;
+	stringstream flags;
+	flags << (testbit(status_reg, 7) ? "E" : ".");
+	flags << (testbit(status_reg, 6) ? "F" : ".");
+	flags << (testbit(status_reg, 5) ? "H" : ".");
+	flags << (testbit(status_reg, 4) ? "I" : ".");
+	flags << (testbit(status_reg, 3) ? "N" : ".");
+	flags << (testbit(status_reg, 2) ? "Z" : ".");
+	flags << (testbit(status_reg, 1) ? "V" : ".");
+	flags << (testbit(status_reg, 0) ? "C" : ".");
+	cout << "Flags: " << flags.str() << endl;
+
+	if (print_disassembly)
+	{
+	    stringstream ss;
+	    disassembleinstr(ss, status.pc);
+	    cout << "Disassembly: " << ss.str() << endl;
+	}
+
 	cout << endl;
+    }
+
+    size_t BotnamiKonami2::disassembleinstr(ostream &stream, size_t pc)
+    {
+	size_t prev_pc = pc;
+
+	uint8_t opcode = readByte(pc++);
+	uint8_t arg = readByte(pc);
+	uint16_t arg16 = readWord(pc);
+
+	uint16_t branch_offs = (pc + int8_t(arg));
+
+	switch (opcode)
+	{
+	    case 0x08:
+	    {
+		pc += 1;
+		stream << "leax ";
+		indexed_mode_dasm(stream, arg, pc);
+	    }
+	    break;
+	    case 0x09:
+	    {
+		pc += 1;
+		stream << "leay ";
+		indexed_mode_dasm(stream, arg, pc);
+	    }
+	    break;
+	    case 0x0A:
+	    {
+		pc += 1;
+		stream << "leau ";
+		indexed_mode_dasm(stream, arg, pc);
+	    }
+	    break;
+	    case 0x0B:
+	    {
+		pc += 1;
+		stream << "leay ";
+		indexed_mode_dasm(stream, arg, pc);
+	    }
+	    break;
+	    case 0x0C:
+	    {
+		pc += 1;
+		stream << "pushs";
+	    }
+	    break;
+	    case 0x0E:
+	    {
+		pc += 1;
+		stream << "pulls";
+	    }
+	    break;
+	    case 0x10:
+	    {
+		pc += 1;
+		stream << "lda " << hex << int(arg);
+	    }
+	    break;
+	    case 0x11:
+	    {
+		pc += 1;
+		stream << "ldb " << hex << int(arg);
+	    }
+	    break;
+	    case 0x12:
+	    {
+		pc += 1;
+		stream << "lda ";
+		indexed_mode_dasm(stream, arg, pc);
+	    }
+	    break;
+	    case 0x34:
+	    {
+		pc += 1;
+		stream << "cmpa #$" << hex << int(arg);
+	    }
+	    break;
+	    case 0x35:
+	    {
+		pc += 1;
+		stream << "cmpb #$" << hex << int(arg);
+	    }
+	    break;
+	    case 0x36:
+	    {
+		pc += 1;
+		stream << "cmpa ";
+		indexed_mode_dasm(stream, arg, pc);
+	    }
+	    break;
+	    case 0x38:
+	    {
+		pc += 1;
+		stream << "setlines #$" << hex << int(arg);
+	    }
+	    break;
+	    case 0x3A:
+	    {
+		pc += 1;
+		stream << "sta ";
+		indexed_mode_dasm(stream, arg, pc);
+	    }
+	    break;
+	    case 0x3B:
+	    {
+		pc += 1;
+		stream << "stb ";
+		indexed_mode_dasm(stream, arg, pc);
+	    }
+	    break;
+	    case 0x40:
+	    {
+		pc += 2;
+		stream << "ldd #$" << hex << int(arg16) << endl;
+	    }
+	    break;
+	    case 0x42:
+	    {
+		pc += 2;
+		stream << "ldx #$" << hex << int(arg16) << endl;
+	    }
+	    break;
+	    case 0x43:
+	    {
+		pc += 1;
+		stream << "ldx ";
+		indexed_mode_dasm(stream, arg, pc);
+	    }
+	    break;
+	    case 0x44:
+	    {
+		pc += 2;
+		stream << "ldy #$" << hex << int(arg16) << endl;
+	    }
+	    break;
+	    case 0x45:
+	    {
+		pc += 1;
+		stream << "ldy ";
+		indexed_mode_dasm(stream, arg, pc);
+	    }
+	    break;
+	    case 0x46:
+	    {
+		pc += 2;
+		stream << "ldu #$" << hex << int(arg16) << endl;
+	    }
+	    break;
+	    case 0x48:
+	    {
+		pc += 2;
+		stream << "lds #$" << hex << int(arg16) << endl;
+	    }
+	    break;
+	    case 0x60:
+	    {
+		stream << "bra #$" << hex << int(branch_offs);
+	    }
+	    break;
+	    case 0x62:
+	    {
+		stream << "bcc #$" << hex << int(branch_offs);
+	    }
+	    break;
+	    case 0x63:
+	    {
+		stream << "bne #$" << hex << int(branch_offs);
+	    }
+	    break;
+	    case 0x64:
+	    {
+		stream << "bvc #$" << hex << int(branch_offs);
+	    }
+	    break;
+	    case 0x65:
+	    {
+		stream << "bpl #$" << hex << int(branch_offs);
+	    }
+	    break;
+	    case 0x70:
+	    {
+		stream << "brn #$" << hex << int(branch_offs);
+	    }
+	    break;
+	    case 0x72:
+	    {
+		stream << "bcs #$" << hex << int(branch_offs);
+	    }
+	    break;
+	    case 0x73:
+	    {
+		stream << "beq #$" << hex << int(branch_offs);
+	    }
+	    break;
+	    case 0x74:
+	    {
+		stream << "bvs #$" << hex << int(branch_offs);
+	    }
+	    break;
+	    case 0x75:
+	    {
+		stream << "bmi #$" << hex << int(branch_offs);
+	    }
+	    break;
+	    case 0x80: stream << "clra"; break;
+	    case 0x81: stream << "clrb"; break;
+	    case 0x82:
+	    {
+		pc += 1;
+		stream << "clr ";
+		indexed_mode_dasm(stream, arg, pc);
+	    }
+	    break;
+	    case 0x83: stream << "coma"; break;
+	    case 0x84: stream << "comb"; break;
+	    case 0x89: stream << "inca"; break;
+	    case 0x8A: stream << "incb"; break;
+	    case 0x8C: stream << "deca"; break;
+	    case 0x8D: stream << "decb"; break;
+	    case 0x90: stream << "tsta"; break;
+	    case 0x91: stream << "tstb"; break;
+	    case 0x92:
+	    {
+		pc += 1;
+		stream << "tst ";
+		indexed_mode_dasm(stream, arg, pc);
+	    }
+	    break;
+	    case 0x93: stream << "lsra"; break;
+	    case 0x94: stream << "lsrb"; break;
+	    case 0xAC:
+	    {
+		stream << "decb, jnz #$" << hex << int(branch_offs);
+	    }
+	    break;
+	    default: stream << "unk"; break;
+	}
+
+	return (pc - prev_pc);
+    }
+
+    void BotnamiKonami2::indexed_mode_dasm(ostream &stream, uint8_t mode, size_t &pc)
+    {
+	array<string, 8> index_reg = 
+	{
+	    "?", "?", "x", "y",
+	    "?", "u", "s", "pc"
+	};
+
+	int idx = ((mode >> 4) & 0x7);
+	int type = (mode & 0xF);
+
+	if (testbit(mode, 7))
+	{
+	    if (testbit(type, 3))
+	    {
+		switch (type & 0x7)
+		{
+		    case 0x0: stream << "[a, " << index_reg.at(idx) << "]"; break;
+		    case 0x1: stream << "[b, " << index_reg.at(idx) << "]"; break;
+		    case 0x4:
+		    {
+			uint8_t imm = readByte(pc++);
+			stream << "[#$" << hex << int(imm) << "]";
+		    }
+		    break;
+		    case 0x7: stream << "[d, " << index_reg.at(idx) << "]"; break;
+		    default: stream << "[?, " << index_reg.at(idx) << "]"; break;
+		}
+	    }
+	    else
+	    {
+		switch (type & 0x7)
+		{
+		    case 0x0: stream << "a, " << index_reg.at(idx); break;
+		    case 0x1: stream << "b, " << index_reg.at(idx); break;
+		    case 0x4:
+		    {
+			uint8_t imm = readByte(pc++);
+			stream << "#$" << hex << int(imm);
+		    }
+		    break;
+		    case 0x7: stream << "d, " << index_reg.at(idx); break;
+		    default: stream << "?, " << index_reg.at(idx); break;
+		}
+	    }
+	}
+	else
+	{
+	    if (testbit(type, 3))
+	    {
+		switch (type & 0x7)
+		{
+		    case 0x0: stream << "[, " << index_reg.at(idx) << "+]"; break;
+		    case 0x1: stream << "[, " << index_reg.at(idx) << "++]"; break;
+		    case 0x2: stream << "[, -" << index_reg.at(idx) << "]"; break;
+		    case 0x3: stream << "[, --" << index_reg.at(idx) << "]"; break;
+		    case 0x4:
+		    {
+			uint8_t imm = readByte(pc++);
+
+			if (testbit(imm, 7))
+			{
+			    stream << "[#$-" << hex << int(0x100 - imm) << ", " << index_reg.at(idx) << "]";
+			}
+			else
+			{
+			    stream << "[#$" << hex << int(imm) << ", " << index_reg.at(idx) << "]";
+			}
+		    }
+		    break;
+		    case 0x5:
+		    {
+			uint16_t imm = readWord(pc);
+			pc += 2;
+
+			if (testbit(imm, 15))
+			{
+			    stream << "[#$-" << hex << int(0x10000 - imm) << ", " << index_reg.at(idx) << "]";
+			}
+			else
+			{
+			    stream << "[#$" << hex << int(imm) << ", " << index_reg.at(idx) << "]";
+			}
+		    }
+		    break;
+		    case 0x6:
+		    {
+			stream << "[," << index_reg.at(idx) << "]";
+		    }
+		    break;
+		    case 0x7:
+		    {
+			uint16_t imm = readWord(pc);
+			pc += 2;
+
+			stream << "[$" << hex << int(imm) << "]";
+		    }
+		    break;
+		}
+	    }
+	    else
+	    {
+		switch (type & 0x7)
+		{
+		    case 0x0: stream << ", " << index_reg.at(idx) << "+"; break;
+		    case 0x1: stream << ", " << index_reg.at(idx) << "++"; break;
+		    case 0x2: stream << ", -" << index_reg.at(idx); break;
+		    case 0x3: stream << ", --" << index_reg.at(idx); break;
+		    case 0x4:
+		    {
+			uint8_t imm = readByte(pc++);
+
+			if (testbit(imm, 7))
+			{
+			    stream << "#$-" << hex << int(0x100 - imm) << ", " << index_reg.at(idx);
+			}
+			else
+			{
+			    stream << "#$" << hex << int(imm) << ", " << index_reg.at(idx);
+			}
+		    }
+		    break;
+		    case 0x5:
+		    {
+			uint16_t imm = readWord(pc);
+			pc += 2;
+
+			if (testbit(imm, 15))
+			{
+			    stream << "#$-" << hex << int(0x10000 - imm) << ", " << index_reg.at(idx);
+			}
+			else
+			{
+			    stream << "#$" << hex << int(imm) << ", " << index_reg.at(idx);
+			}
+		    }
+		    break;
+		    case 0x6:
+		    {
+			stream << "," << index_reg.at(idx);
+		    }
+		    break;
+		    case 0x7:
+		    {
+			uint16_t imm = readWord(pc);
+			pc += 2;
+
+			stream << "$" << hex << int(imm);
+		    }
+		    break;
+		}
+	    }
+	}
     }
 };

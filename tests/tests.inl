@@ -115,6 +115,33 @@ TEST(AddAImm, "BotnamiTest.M6809.Arithmetic")
 	{
 	    botassert::is_false(test.getCore().is_sign());
 	}
+
+	if (expected_value == 128)
+	{
+	    botassert::is_true(test.getCore().is_overflow());
+	}
+	else
+	{
+	    botassert::is_false(test.getCore().is_overflow());
+	}
+
+	if (expected_value == 0)
+	{
+	    botassert::is_true(test.getCore().is_carry());
+	}
+	else
+	{
+	    botassert::is_false(test.getCore().is_carry());
+	}
+
+	if ((expected_value % 16) == 0)
+	{
+	    botassert::is_true(test.getCore().is_half());
+	}
+	else
+	{
+	    botassert::is_false(test.getCore().is_half());
+	}
     }
 
     test.shutdown();

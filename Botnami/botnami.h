@@ -81,10 +81,15 @@ namespace botnami
 	    virtual void reset();
 
 	    int executenextinstr();
-	    virtual void debugoutput(bool print_disassembly = false);
-	    // size_t disassmebleinstr(ostream &stream, uint32_t pc);
+	    virtual void debugoutput(bool print_disassembly = true);
+	    virtual size_t disassembleinstr(ostream &stream, size_t pc);
 
 	    void setinterface(BotnamiInterface &cb);
+
+	    bool is_half()
+	    {
+		return testbit(status_reg, 5);
+	    }
 
 	    bool is_sign()
 	    {
@@ -94,6 +99,16 @@ namespace botnami
 	    bool is_zero()
 	    {
 		return testbit(status_reg, 2);
+	    }
+
+	    bool is_overflow()
+	    {
+		return testbit(status_reg, 1);
+	    }
+
+	    bool is_carry()
+	    {
+		return testbit(status_reg, 0);
 	    }
 
 	protected:
@@ -136,6 +151,11 @@ namespace botnami
 		return;
 	    }
 
+	    void set_half(bool is_set)
+	    {
+		status_reg = changebit(status_reg, 5, is_set);
+	    }
+
 	    void set_sign(bool is_set)
 	    {
 		status_reg = changebit(status_reg, 3, is_set);
@@ -144,6 +164,16 @@ namespace botnami
 	    void set_zero(bool is_set)
 	    {
 		status_reg = changebit(status_reg, 2, is_set);
+	    }
+
+	    void set_overflow(bool is_set)
+	    {
+		status_reg = changebit(status_reg, 1, is_set);
+	    }
+
+	    void set_carry(bool is_set)
+	    {
+		status_reg = changebit(status_reg, 0, is_set);
 	    }
 
 	    template<typename T>
@@ -166,6 +196,36 @@ namespace botnami
 		set_z(data);
 	    }
 
+	    template<typename T>
+	    void set_nzv(T data)
+	    {
+		set_n(data);
+		set_z(data);
+		set_v(data, T(0), uint32_t(data));
+	    }
+
+	    template<typename T>
+	    void set_c(uint32_t result)
+	    {
+		int high_bit = (sizeof(T) * 8);
+		set_carry(testbit(result, high_bit));
+	    }
+
+	    template<typename T>
+	    void set_v(T op1, T op2, uint32_t result)
+	    {
+		int high_bit = ((sizeof(T) * 8) - 1);
+		uint32_t overflow_res = (op1 ^ op2 ^ result ^ (result >> 1));
+		set_overflow(testbit(overflow_res, high_bit));
+	    }
+
+	    template<typename T>
+	    void set_h(T op1, T op2, uint32_t result)
+	    {
+		uint32_t half_res = (op1 ^ op2 ^ result);
+		set_half(testbit(half_res, 4));
+	    }
+
 	    bool is_cond_ne()
 	    {
 		return !is_zero();
@@ -174,6 +234,36 @@ namespace botnami
 	    bool is_cond_eq()
 	    {
 		return is_zero();
+	    }
+
+	    bool is_cond_cc()
+	    {
+		return !is_carry();
+	    }
+
+	    bool is_cond_cs()
+	    {
+		return is_carry();
+	    }
+
+	    bool is_cond_vc()
+	    {
+		return !is_overflow();
+	    }
+
+	    bool is_cond_vs()
+	    {
+		return is_overflow();
+	    }
+
+	    bool is_cond_pl()
+	    {
+		return !is_sign();
+	    }
+
+	    bool is_cond_mi()
+	    {
+		return is_sign();
 	    }
 
 	    int branch(bool is_cond = true)
@@ -188,16 +278,35 @@ namespace botnami
 		return 3;
 	    }
 
+	    template<bool set_hc = true>
 	    uint8_t add_internal8(uint8_t source, uint8_t operand, bool is_carry = false)
 	    {
 		uint16_t result = (source + operand + is_carry);
 		set_nz<uint8_t>(result);
+		set_v<uint8_t>(source, operand, result);
+		set_c<uint8_t>(result);
+
+		if (set_hc)
+		{
+		    set_h<uint8_t>(source, operand, result);
+		}
+
 		return result;
 	    }
 
 	    uint8_t sub_internal8(uint8_t source, uint8_t operand, bool is_carry = false)
 	    {
 		uint16_t result = (source - operand - is_carry);
+		set_nz<uint8_t>(result);
+		set_v<uint8_t>(source, operand, result);
+		set_c<uint8_t>(result);
+		return result;
+	    }
+
+	    uint8_t lsr_internal8(uint8_t source)
+	    {
+		set_carry(testbit(source, 0));
+		uint8_t result = (source >> 1);
 		set_nz<uint8_t>(result);
 		return result;
 	    }
@@ -207,14 +316,44 @@ namespace botnami
 		return add_internal8(source, operand);
 	    }
 
+	    uint8_t inc_internal8(uint8_t data)
+	    {
+		uint16_t result = (data + 1);
+		set_nz<uint8_t>(result);
+		set_v<uint8_t>(data, 1, result);
+		return uint8_t(result);
+	    }
+
 	    uint8_t dec_internal8(uint8_t data)
 	    {
-		return sub_internal8(data, 1);
+		uint16_t result = (data - 1);
+		set_nz<uint8_t>(result);
+		set_v<uint8_t>(data, 1, result);
+		return uint8_t(result);
+	    }
+
+	    uint8_t com_internal8(uint8_t data)
+	    {
+		uint8_t result = ~data;
+		set_overflow(false);
+		set_carry(true);
+		set_nz<uint8_t>(result);
+		return result;
 	    }
 
 	    void cmp8(uint8_t source, uint8_t operand)
 	    {
 		sub_internal8(source, operand);
+	    }
+
+	    uint8_t lsr8(uint8_t source)
+	    {
+		return lsr_internal8(source);
+	    }
+
+	    uint8_t com8(uint8_t source)
+	    {
+		return com_internal8(source);
 	    }
 
 	    int pushs()
@@ -277,7 +416,7 @@ namespace botnami
 	    int pulls()
 	    {
 		uint8_t stack_reg = getimmByte();
-		int cycles = 4;
+		int cycles = 5;
 
 		if (testbit(stack_reg, 0))
 		{
@@ -372,6 +511,8 @@ namespace botnami
 	    void setLines(uint8_t data);
 
 	    void unrecognizedinstr(uint8_t instr);
+
+	    
 
 	private:
 	    unique_ptr<BotnamiInterface> inter;
@@ -625,6 +766,7 @@ namespace botnami
 
 	    int executeinstr(uint8_t instr);
 	    void debugoutput(bool print_disassembly = false);
+	    size_t disassembleinstr(ostream &stream, size_t pc);
 
 	    Botnami6809Status getStatus()
 	    {
@@ -712,6 +854,8 @@ namespace botnami
 		branch(is_cond_ne());
 		return 4;
 	    }
+
+	    void indexed_mode_dasm(ostream &stream, uint8_t mode, size_t &pc);
     };
 };
 
