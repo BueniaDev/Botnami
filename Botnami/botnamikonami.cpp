@@ -590,6 +590,17 @@ namespace botnami
 		cycles = 2;
 	    }
 	    break; // LSRB
+	    case 0x9C:
+	    {
+		rega = asl8(rega);
+		cycles = 2;
+	    }
+	    break; // ASLA
+	    case 0xAB:
+	    {
+		cycles = lbsr();
+	    }
+	    break; // LBSR
 	    case 0xAC:
 	    {
 		cycles = decbjnz();
@@ -955,6 +966,13 @@ namespace botnami
 	    break;
 	    case 0x93: stream << "lsra"; break;
 	    case 0x94: stream << "lsrb"; break;
+	    case 0x9C: stream << "asla"; break;
+	    case 0x9D: stream << "aslb"; break;
+	    case 0xAB:
+	    {
+		stream << "lbsr #$" << hex << int(lbranch_offs);
+	    }
+	    break;
 	    case 0xAC:
 	    {
 		stream << "decb, jnz #$" << hex << int(branch_offs);

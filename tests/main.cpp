@@ -213,6 +213,57 @@ class BotnamiKonami1Test
 	BotnamiKonami1 core;
 };
 
+class BotnamiKonami2Test
+{
+    public:
+	BotnamiKonami2Test()
+	{
+	    
+	}
+
+	~BotnamiKonami2Test()
+	{
+
+	}
+
+	void init(vector<uint8_t> code, uint16_t start_addr = 0x4000)
+	{
+	    test = new BotnamiTestCPU(core);
+	    test->init_code(code, start_addr);
+	}
+
+	void shutdown()
+	{
+	    if (test != NULL)
+	    {
+		test->shutdown();
+		test = NULL;
+	    }
+	}
+
+	void run(int num_instrs = 1)
+	{
+	    if (test == NULL)
+	    {
+		return;
+	    }
+
+	    for (int i = 0; i < num_instrs; i++)
+	    {
+		test->run_instr();
+	    }
+	}
+
+	BotnamiKonami2 &getCore()
+	{
+	    return core;
+	}
+
+    private:
+	BotnamiTestCPU *test = NULL;
+	BotnamiKonami2 core;
+};
+
 #include "tests.inl"
 
 string fetch_str(const utest::status &stat)

@@ -337,6 +337,15 @@ namespace botnami
 		return result;
 	    }
 
+	    uint8_t asl_internal8(uint8_t source)
+	    {
+		uint16_t result = (source << 1);
+		set_nz<uint8_t>(result);
+		set_v<uint8_t>(source, source, result);
+		set_c<uint8_t>(result);
+		return result;
+	    }
+
 	    uint8_t lsr_internal8(uint8_t source)
 	    {
 		set_carry(testbit(source, 0));
@@ -383,6 +392,11 @@ namespace botnami
 	    uint8_t and8(uint8_t source, uint8_t operand)
 	    {
 		return and_internal8(source, operand);
+	    }
+
+	    uint8_t asl8(uint8_t source)
+	    {
+		return asl_internal8(source);
 	    }
 
 	    uint8_t lsr8(uint8_t source)
@@ -550,8 +564,6 @@ namespace botnami
 	    void setLines(uint8_t data);
 
 	    void unrecognizedinstr(uint8_t instr);
-
-	    
 
 	private:
 	    unique_ptr<BotnamiInterface> inter;
@@ -892,6 +904,15 @@ namespace botnami
 		regb = dec_internal8(regb);
 		branch(is_cond_ne());
 		return 4;
+	    }
+
+	    int lbsr()
+	    {
+		int16_t offs = getimmWord();
+		uint16_t addr = (pc + offs);
+		pushsp16(pc);
+		pc = addr;
+		return 8;
 	    }
 
 	    void indexed_mode_dasm(ostream &stream, uint8_t mode, size_t &pc);

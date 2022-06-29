@@ -192,6 +192,7 @@ namespace botnami
     void BotnamiCPU::unrecognizedinstr(uint8_t instr)
     {
 	cout << "Unrecognized opcode of " << hex << int(instr) << endl;
+	debugoutput(false);
 	exit(1);
     }
 };

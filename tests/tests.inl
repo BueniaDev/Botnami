@@ -182,4 +182,67 @@ TEST(EncTest, "BotnamiTest.Konami1")
     test.shutdown();
 }
 
+TEST(LslATest, "Botnami.Konami2.Shift")
+{
+    BotnamiKonami2Test test;
+
+    vector<uint8_t> code;
+
+    for (int i = 0; i < 260; i++)
+    {
+	code.push_back(0x10);
+	code.push_back((i & 0xFF));
+	code.push_back(0x9C);
+    }
+
+    test.init(code, 0x1000);
+
+    for (int i = 0; i < 260; i++)
+    {
+	test.run(2);
+	auto status = test.getCore().getStatus();
+
+	uint8_t expected_value = ((i << 1) & 0xFF);
+
+	botassert::eq(expected_value, status.rega);
+
+	if (expected_value == 0)
+	{
+	    botassert::is_true(test.getCore().is_zero());
+	}
+	else
+	{
+	    botassert::is_false(test.getCore().is_zero());
+	}
+
+	if ((expected_value >= 128) && (expected_value <= 255))
+	{
+	    botassert::is_true(test.getCore().is_sign());
+	}
+	else
+	{
+	    botassert::is_false(test.getCore().is_sign());
+	}
+
+	if ((i >= 64) && (i <= 191))
+	{
+	    botassert::is_true(test.getCore().is_overflow());
+	}
+	else
+	{
+	    botassert::is_false(test.getCore().is_overflow());
+	}
+
+	if ((i >= 128) && (i <= 255))
+	{
+	    botassert::is_true(test.getCore().is_carry());
+	}
+	else
+	{
+	    botassert::is_false(test.getCore().is_carry());
+	}
+    }
+
+    test.shutdown();
+}
 
