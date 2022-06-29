@@ -383,6 +383,14 @@ namespace botnami
 		cycles = 3;
 	    }
 	    break; // LDU imm16
+	    case 0x47:
+	    {
+		int index_cycles = indexed_mode();
+		usp = readWord(extended_address);
+		set_nzv(usp);
+		cycles = (3 + index_cycles);
+	    }
+	    break; // LDU indexed
 	    case 0x48:
 	    {
 		uint16_t value = getimmWord();
@@ -391,6 +399,14 @@ namespace botnami
 		cycles = 3;
 	    }
 	    break; // LDS imm16
+	    case 0x49:
+	    {
+		int index_cycles = indexed_mode();
+		ssp = readWord(extended_address);
+		set_nzv(ssp);
+		cycles = (3 + index_cycles);
+	    }
+	    break; // LDS indexed
 	    case 0x58:
 	    {
 		int index_cycles = indexed_mode();
@@ -651,6 +667,16 @@ namespace botnami
 		cycles = 2;
 	    }
 	    break; // NOP
+	    case 0xC2:
+	    {
+		set_sign(false);
+		set_zero(true);
+		set_carry(false);
+		set_overflow(false);
+		setRegD(0);
+		cycles = 2;
+	    }
+	    break; // CLRD
 	    default: unrecognizedinstr(instr); break;
 	}
 
@@ -1060,6 +1086,7 @@ namespace botnami
 	    }
 	    break;
 	    case 0xAE: stream << "nop"; break;
+	    case 0xC2: stream << "clrd"; break;
 	    default: stream << "unk"; break;
 	}
 
