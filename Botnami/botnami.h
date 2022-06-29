@@ -548,6 +548,12 @@ namespace botnami
 		return ((high << 8) | low);
 	    }
 
+	    int rts()
+	    {
+		pc = pullsp16();
+		return 5;
+	    }
+
 	    virtual int executeinstr(uint8_t instr);
 
 	    uint8_t readOpcode();

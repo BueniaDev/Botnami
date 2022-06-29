@@ -391,6 +391,41 @@ namespace botnami
 		cycles = 3;
 	    }
 	    break; // LDS imm16
+	    case 0x58:
+	    {
+		int index_cycles = indexed_mode();
+		writeWord(extended_address, getRegD());
+		cycles = (3 + index_cycles);
+	    }
+	    break; // STD indexed
+	    case 0x59:
+	    {
+		int index_cycles = indexed_mode();
+		writeWord(extended_address, regx);
+		cycles = (3 + index_cycles);
+	    }
+	    break; // STX indexed
+	    case 0x5A:
+	    {
+		int index_cycles = indexed_mode();
+		writeWord(extended_address, regx);
+		cycles = (3 + index_cycles);
+	    }
+	    break; // STY indexed
+	    case 0x5B:
+	    {
+		int index_cycles = indexed_mode();
+		writeWord(extended_address, usp);
+		cycles = (3 + index_cycles);
+	    }
+	    break; // STU indexed
+	    case 0x5C:
+	    {
+		int index_cycles = indexed_mode();
+		writeWord(extended_address, ssp);
+		cycles = (3 + index_cycles);
+	    }
+	    break; // STS indexed
 	    case 0x60:
 	    {
 		cycles = branch(true);
@@ -558,6 +593,11 @@ namespace botnami
 		cycles = 2;
 	    }
 	    break; // DECB
+	    case 0x8F:
+	    {
+		cycles = rts();
+	    }
+	    break; // RTS
 	    case 0x90:
 	    {
 		set_nzv<uint8_t>(rega);
@@ -606,6 +646,11 @@ namespace botnami
 		cycles = decbjnz();
 	    }
 	    break; // DECB, JNZ
+	    case 0xAE:
+	    {
+		cycles = 2;
+	    }
+	    break; // NOP
 	    default: unrecognizedinstr(instr); break;
 	}
 
@@ -840,6 +885,41 @@ namespace botnami
 		stream << "lds #$" << hex << int(arg16) << endl;
 	    }
 	    break;
+	    case 0x58:
+	    {
+		pc += 1;
+		stream << "std ";
+		indexed_mode_dasm(stream, arg, pc);
+	    }
+	    break;
+	    case 0x59:
+	    {
+		pc += 1;
+		stream << "stx ";
+		indexed_mode_dasm(stream, arg, pc);
+	    }
+	    break;
+	    case 0x5A:
+	    {
+		pc += 1;
+		stream << "sty ";
+		indexed_mode_dasm(stream, arg, pc);
+	    }
+	    break;
+	    case 0x5B:
+	    {
+		pc += 1;
+		stream << "stu ";
+		indexed_mode_dasm(stream, arg, pc);
+	    }
+	    break;
+	    case 0x5C:
+	    {
+		pc += 1;
+		stream << "sts ";
+		indexed_mode_dasm(stream, arg, pc);
+	    }
+	    break;
 	    case 0x60:
 	    {
 		stream << "bra #$" << hex << int(branch_offs);
@@ -955,6 +1035,7 @@ namespace botnami
 	    case 0x8A: stream << "incb"; break;
 	    case 0x8C: stream << "deca"; break;
 	    case 0x8D: stream << "decb"; break;
+	    case 0x8F: stream << "rts"; break;
 	    case 0x90: stream << "tsta"; break;
 	    case 0x91: stream << "tstb"; break;
 	    case 0x92:
@@ -978,6 +1059,7 @@ namespace botnami
 		stream << "decb, jnz #$" << hex << int(branch_offs);
 	    }
 	    break;
+	    case 0xAE: stream << "nop"; break;
 	    default: stream << "unk"; break;
 	}
 
