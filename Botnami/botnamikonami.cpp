@@ -320,7 +320,15 @@ namespace botnami
 		setLines(value);
 		cycles = 2;
 	    }
-	    break; // SETLINES
+	    break; // SETLINES imm
+	    case 0x39:
+	    {
+		int index_cycles = indexed_mode();
+		uint8_t operand = readByte(extended_address);
+		setLines(operand);
+		cycles = (2 + index_cycles);
+	    }
+	    break; // SETLINES indexed
 	    case 0x3A:
 	    {
 		int index_cycles = indexed_mode();
@@ -851,6 +859,13 @@ namespace botnami
 	    {
 		pc += 1;
 		stream << "setlines #$" << hex << int(arg);
+	    }
+	    break;
+	    case 0x39:
+	    {
+		pc += 1;
+		stream << "setlines ";
+		indexed_mode_dasm(stream, arg, pc);
 	    }
 	    break;
 	    case 0x3A:

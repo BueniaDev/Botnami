@@ -15,20 +15,7 @@ if (NOT CMAKE_BUILD_TYPE)
     set(CMAKE_BUILD_TYPE "Release")
 endif()
 
-set(BOTNAMI_HEADERS
-	Botnami/botnami_api.h
-	Botnami/botnami.h)
-
-set(BOTNAMI_SOURCES
-	Botnami/botnami.cpp
-	Botnami/botnami6800.cpp
-	Botnami/botnami6809.cpp
-	Botnami/botnami6309.cpp
-	Botnami/botnamikonami.cpp)
-
-add_library(botnami ${BOTNAMI_SOURCES} ${BOTNAMI_HEADERS})
-target_include_directories(botnami PUBLIC ${BOTNAMI_INCLUDE_DIR})
-add_library(libbotnami ALIAS botnami)
+add_subdirectory(Botnami)
 
 if (BUILD_TESTS)
 	add_subdirectory(tests)

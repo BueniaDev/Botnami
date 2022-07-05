@@ -1,6 +1,6 @@
 #!/bin/bash
 
-if [[ ! -f "libbotnami.a" ]]; then
+if [[ ! -f "Botnami/libbotnami.a" ]]; then
 	echo "Run this script from the directory where you built the Botnami engine."
 	exit 1
 fi
