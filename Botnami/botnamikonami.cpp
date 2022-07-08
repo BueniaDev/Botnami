@@ -248,6 +248,13 @@ namespace botnami
 		cycles = (2 + index_cycles);
 	    }
 	    break; // LDA indexed
+	    case 0x13:
+	    {
+		int index_cycles = indexed_mode();
+		regb = readByte(extended_address);
+		cycles = (2 + index_cycles);
+	    }
+	    break; // LDB indexed
 	    case 0x14:
 	    {
 		uint8_t operand = getimmByte();
@@ -314,6 +321,36 @@ namespace botnami
 		cycles = (2 + index_cycles);
 	    }
 	    break; // ANDA indexed
+	    case 0x28:
+	    {
+		uint8_t operand = getimmByte();
+		bit8(rega, operand);
+		cycles = 2;
+	    }
+	    break; // BITA imm
+	    case 0x29:
+	    {
+		uint8_t operand = getimmByte();
+		bit8(regb, operand);
+		cycles = 2;
+	    }
+	    break; // BITA imm
+	    case 0x2A:
+	    {
+		int index_cycles = indexed_mode();
+		uint8_t operand = readByte(extended_address);
+		bit8(rega, operand);
+		cycles = (2 + index_cycles);
+	    }
+	    break; // BITA indexed
+	    case 0x2B:
+	    {
+		int index_cycles = indexed_mode();
+		uint8_t operand = readByte(extended_address);
+		bit8(regb, operand);
+		cycles = (2 + index_cycles);
+	    }
+	    break; // BITB indexed
 	    case 0x34:
 	    {
 		uint8_t operand = getimmByte();

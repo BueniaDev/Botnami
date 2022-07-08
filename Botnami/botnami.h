@@ -413,6 +413,11 @@ namespace botnami
 		return and_internal8(source, operand);
 	    }
 
+	    void bit8(uint8_t source, uint8_t operand)
+	    {
+		and_internal8(source, operand);
+	    }
+
 	    uint8_t asl8(uint8_t source)
 	    {
 		return asl_internal8(source);
