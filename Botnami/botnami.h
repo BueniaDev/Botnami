@@ -949,6 +949,21 @@ namespace botnami
 		return 8;
 	    }
 
+	    int bmove()
+	    {
+		int cycles = 1;
+
+		while (usp > 0)
+		{
+		    uint8_t operand = readByte(regy++);
+		    writeByte(regx++, operand);
+		    usp -= 1;
+		    cycles += 2;
+		}
+
+		return cycles;
+	    }
+
 	    void indexed_mode_dasm(ostream &stream, uint8_t mode, size_t &pc);
     };
 };

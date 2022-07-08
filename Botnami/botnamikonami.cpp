@@ -437,6 +437,13 @@ namespace botnami
 		cycles = (3 + index_cycles);
 	    }
 	    break; // LDS indexed
+	    case 0x4A:
+	    {
+		uint16_t operand = getimmWord();
+		cmp16(getRegD(), operand);
+		cycles = 3;
+	    }
+	    break; // CMPD imm
 	    case 0x4B:
 	    {
 		int index_cycles = indexed_mode();
@@ -446,6 +453,13 @@ namespace botnami
 		cycles = (4 + index_cycles);
 	    }
 	    break; // CMPD indexed
+	    case 0x4C:
+	    {
+		uint16_t operand = getimmWord();
+		cmp16(regx, operand);
+		cycles = 3;
+	    }
+	    break; // CMPX imm
 	    case 0x4D:
 	    {
 		int index_cycles = indexed_mode();
@@ -455,6 +469,13 @@ namespace botnami
 		cycles = (4 + index_cycles);
 	    }
 	    break; // CMPX indexed
+	    case 0x4E:
+	    {
+		uint16_t operand = getimmWord();
+		cmp16(regy, operand);
+		cycles = 3;
+	    }
+	    break; // CMPY imm
 	    case 0x4F:
 	    {
 		int index_cycles = indexed_mode();
@@ -745,6 +766,11 @@ namespace botnami
 		cycles = 2;
 	    }
 	    break; // NOP
+	    case 0xB6:
+	    {
+		cycles = bmove();
+	    }
+	    break;
 	    case 0xC2:
 	    {
 		set_sign(false);
@@ -1003,6 +1029,20 @@ namespace botnami
 		indexed_mode_dasm(stream, arg, pc);
 	    }
 	    break;
+	    case 0x4D:
+	    {
+		pc += 1;
+		stream << "cmpx ";
+		indexed_mode_dasm(stream, arg, pc);
+	    }
+	    break;
+	    case 0x4F:
+	    {
+		pc += 1;
+		stream << "cmpy ";
+		indexed_mode_dasm(stream, arg, pc);
+	    }
+	    break;
 	    case 0x58:
 	    {
 		pc += 1;
@@ -1192,6 +1232,7 @@ namespace botnami
 	    }
 	    break;
 	    case 0xAE: stream << "nop"; break;
+	    case 0xB6: stream << "bmove"; break;
 	    case 0xC2: stream << "clrd"; break;
 	    default: stream << "unk"; break;
 	}
