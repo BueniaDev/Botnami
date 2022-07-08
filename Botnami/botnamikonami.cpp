@@ -412,6 +412,14 @@ namespace botnami
 		cycles = 3;
 	    }
 	    break; // LDD imm16
+	    case 0x41:
+	    {
+		int index_cycles = indexed_mode();
+		setRegD(readWord(extended_address));
+		set_nzv(getRegD());
+		cycles = (3 + index_cycles);
+	    }
+	    break; // LDD indexed
 	    case 0x42:
 	    {
 		regx = getimmWord();
@@ -521,7 +529,39 @@ namespace botnami
 		cmp16(regy, operand);
 		cycles = (4 + index_cycles);
 	    }
-	    break; // CMPX indexed
+	    break; // CMPY indexed
+	    case 0x50:
+	    {
+		uint16_t operand = getimmWord();
+		cmp16(usp, operand);
+		cycles = 3;
+	    }
+	    break; // CMPU imm
+	    case 0x51:
+	    {
+		int index_cycles = indexed_mode();
+
+		uint16_t operand = readWord(extended_address);
+		cmp16(usp, operand);
+		cycles = (4 + index_cycles);
+	    }
+	    break; // CMPU indexed
+	    case 0x52:
+	    {
+		uint16_t operand = getimmWord();
+		cmp16(ssp, operand);
+		cycles = 3;
+	    }
+	    break; // CMPS imm
+	    case 0x53:
+	    {
+		int index_cycles = indexed_mode();
+
+		uint16_t operand = readWord(extended_address);
+		cmp16(ssp, operand);
+		cycles = (4 + index_cycles);
+	    }
+	    break; // CMPS indexed
 	    case 0x58:
 	    {
 		int index_cycles = indexed_mode();
@@ -1021,6 +1061,13 @@ namespace botnami
 		stream << "ldd #$" << hex << int(arg16) << endl;
 	    }
 	    break;
+	    case 0x41:
+	    {
+		pc += 1;
+		stream << "ldd ";
+		indexed_mode_dasm(stream, arg, pc);
+	    }
+	    break;
 	    case 0x42:
 	    {
 		pc += 2;
@@ -1053,10 +1100,24 @@ namespace botnami
 		stream << "ldu #$" << hex << int(arg16) << endl;
 	    }
 	    break;
+	    case 0x47:
+	    {
+		pc += 1;
+		stream << "ldu ";
+		indexed_mode_dasm(stream, arg, pc);
+	    }
+	    break;
 	    case 0x48:
 	    {
 		pc += 2;
 		stream << "lds #$" << hex << int(arg16) << endl;
+	    }
+	    break;
+	    case 0x49:
+	    {
+		pc += 1;
+		stream << "lds ";
+		indexed_mode_dasm(stream, arg, pc);
 	    }
 	    break;
 	    case 0x4B:
