@@ -398,6 +398,16 @@ namespace botnami
 		return add_internal8(source, operand, is_carry());
 	    }
 
+	    uint8_t sub8(uint8_t source, uint8_t operand)
+	    {
+		return sub_internal8(source, operand);
+	    }
+
+	    uint8_t sbc8(uint8_t source, uint8_t operand)
+	    {
+		return sub_internal8(source, operand, is_carry());
+	    }
+
 	    void cmp8(uint8_t source, uint8_t operand)
 	    {
 		sub_internal8(source, operand);

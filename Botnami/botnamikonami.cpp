@@ -299,6 +299,34 @@ namespace botnami
 		cycles = 2;
 	    }
 	    break; // ADCB imm
+	    case 0x1C:
+	    {
+		uint8_t operand = getimmByte();
+		rega = sub8(rega, operand);
+		cycles = 2;
+	    }
+	    break; // SUBA imm
+	    case 0x1D:
+	    {
+		uint8_t operand = getimmByte();
+		regb = sub8(regb, operand);
+		cycles = 2;
+	    }
+	    break; // SUBB imm
+	    case 0x20:
+	    {
+		uint8_t operand = getimmByte();
+		rega = sbc8(rega, operand);
+		cycles = 2;
+	    }
+	    break; // SBCA imm
+	    case 0x21:
+	    {
+		uint8_t operand = getimmByte();
+		regb = sbc8(regb, operand);
+		cycles = 2;
+	    }
+	    break; // SBCB imm
 	    case 0x24:
 	    {
 		uint8_t operand = getimmByte();
@@ -321,6 +349,14 @@ namespace botnami
 		cycles = (2 + index_cycles);
 	    }
 	    break; // ANDA indexed
+	    case 0x27:
+	    {
+		int index_cycles = indexed_mode();
+		uint8_t operand = readByte(extended_address);
+		regb = and8(regb, operand);
+		cycles = (2 + index_cycles);
+	    }
+	    break; // ANDB indexed
 	    case 0x28:
 	    {
 		uint8_t operand = getimmByte();
@@ -334,7 +370,7 @@ namespace botnami
 		bit8(regb, operand);
 		cycles = 2;
 	    }
-	    break; // BITA imm
+	    break; // BITB imm
 	    case 0x2A:
 	    {
 		int index_cycles = indexed_mode();
@@ -823,11 +859,17 @@ namespace botnami
 		cycles = 2;
 	    }
 	    break; // ASLA
+	    case 0x9D:
+	    {
+		regb = asl8(regb);
+		cycles = 2;
+	    }
+	    break; // ASLB
 	    case 0xAA:
 	    {
 		cycles = bsr();
 	    }
-	    break;
+	    break; // BSR
 	    case 0xAB:
 	    {
 		cycles = lbsr();
@@ -847,7 +889,7 @@ namespace botnami
 	    {
 		cycles = bmove();
 	    }
-	    break;
+	    break; // BMOVE
 	    case 0xC2:
 	    {
 		set_sign(false);
@@ -971,6 +1013,13 @@ namespace botnami
 		indexed_mode_dasm(stream, arg, pc);
 	    }
 	    break;
+	    case 0x13:
+	    {
+		pc += 1;
+		stream << "ldb ";
+		indexed_mode_dasm(stream, arg, pc);
+	    }
+	    break;
 	    case 0x14:
 	    {
 		pc += 1;
@@ -990,6 +1039,49 @@ namespace botnami
 		indexed_mode_dasm(stream, arg, pc);
 	    }
 	    break;
+	    case 0x17:
+	    {
+		pc += 1;
+		stream << "addb ";
+		indexed_mode_dasm(stream, arg, pc);
+	    }
+	    break;
+	    case 0x18:
+	    {
+		pc += 1;
+		stream << "adca #$" << hex << int(arg);
+	    }
+	    break;
+	    case 0x19:
+	    {
+		pc += 1;
+		stream << "adcb #$" << hex << int(arg);
+	    }
+	    break;
+	    case 0x1C:
+	    {
+		pc += 1;
+		stream << "suba #$" << hex << int(arg);
+	    }
+	    break;
+	    case 0x1D:
+	    {
+		pc += 1;
+		stream << "subb #$" << hex << int(arg);
+	    }
+	    break;
+	    case 0x20:
+	    {
+		pc += 1;
+		stream << "sbca #$" << hex << int(arg);
+	    }
+	    break;
+	    case 0x21:
+	    {
+		pc += 1;
+		stream << "sbcb #$" << hex << int(arg);
+	    }
+	    break;
 	    case 0x24:
 	    {
 		pc += 1;
@@ -1006,6 +1098,39 @@ namespace botnami
 	    {
 		pc += 1;
 		stream << "anda ";
+		indexed_mode_dasm(stream, arg, pc);
+	    }
+	    break;
+	    case 0x27:
+	    {
+		pc += 1;
+		stream << "andb ";
+		indexed_mode_dasm(stream, arg, pc);
+	    }
+	    break;
+	    case 0x28:
+	    {
+		pc += 1;
+		stream << "bita #$" << hex << int(arg);
+	    }
+	    break;
+	    case 0x29:
+	    {
+		pc += 1;
+		stream << "bitb #$" << hex << int(arg);
+	    }
+	    break;
+	    case 0x2A:
+	    {
+		pc += 1;
+		stream << "bita ";
+		indexed_mode_dasm(stream, arg, pc);
+	    }
+	    break;
+	    case 0x2B:
+	    {
+		pc += 1;
+		stream << "bitb ";
 		indexed_mode_dasm(stream, arg, pc);
 	    }
 	    break;
@@ -1120,11 +1245,23 @@ namespace botnami
 		indexed_mode_dasm(stream, arg, pc);
 	    }
 	    break;
+	    case 0x4A:
+	    {
+		pc += 2;
+		stream << "cmpd #$" << hex << int(arg16) << endl;
+	    }
+	    break;
 	    case 0x4B:
 	    {
 		pc += 1;
 		stream << "cmpd ";
 		indexed_mode_dasm(stream, arg, pc);
+	    }
+	    break;
+	    case 0x4C:
+	    {
+		pc += 2;
+		stream << "cmpx #$" << hex << int(arg16) << endl;
 	    }
 	    break;
 	    case 0x4D:
@@ -1134,10 +1271,42 @@ namespace botnami
 		indexed_mode_dasm(stream, arg, pc);
 	    }
 	    break;
+	    case 0x4E:
+	    {
+		pc += 2;
+		stream << "cmpy #$" << hex << int(arg16) << endl;
+	    }
+	    break;
 	    case 0x4F:
 	    {
 		pc += 1;
 		stream << "cmpy ";
+		indexed_mode_dasm(stream, arg, pc);
+	    }
+	    break;
+	    case 0x50:
+	    {
+		pc += 2;
+		stream << "cmpu #$" << hex << int(arg16) << endl;
+	    }
+	    break;
+	    case 0x51:
+	    {
+		pc += 1;
+		stream << "cmpu ";
+		indexed_mode_dasm(stream, arg, pc);
+	    }
+	    break;
+	    case 0x52:
+	    {
+		pc += 2;
+		stream << "cmps #$" << hex << int(arg16) << endl;
+	    }
+	    break;
+	    case 0x53:
+	    {
+		pc += 1;
+		stream << "cmps ";
 		indexed_mode_dasm(stream, arg, pc);
 	    }
 	    break;
@@ -1319,6 +1488,11 @@ namespace botnami
 	    case 0x94: stream << "lsrb"; break;
 	    case 0x9C: stream << "asla"; break;
 	    case 0x9D: stream << "aslb"; break;
+	    case 0xAA:
+	    {
+		stream << "bsr #$" << hex << int(branch_offs);
+	    }
+	    break;
 	    case 0xAB:
 	    {
 		stream << "lbsr #$" << hex << int(lbranch_offs);
