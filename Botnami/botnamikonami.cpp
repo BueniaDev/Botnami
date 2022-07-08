@@ -270,6 +270,28 @@ namespace botnami
 		cycles = (2 + index_cycles);
 	    }
 	    break; // ADDA indexed
+	    case 0x17:
+	    {
+		int index_cycles = indexed_mode();
+		uint8_t operand = readByte(extended_address);
+		regb = add8(regb, operand);
+		cycles = (2 + index_cycles);
+	    }
+	    break; // ADDB indexed
+	    case 0x18:
+	    {
+		uint8_t operand = getimmByte();
+		rega = adc8(rega, operand);
+		cycles = 2;
+	    }
+	    break; // ADCA imm
+	    case 0x19:
+	    {
+		uint8_t operand = getimmByte();
+		regb = adc8(regb, operand);
+		cycles = 2;
+	    }
+	    break; // ADCB imm
 	    case 0x24:
 	    {
 		uint8_t operand = getimmByte();
@@ -415,6 +437,33 @@ namespace botnami
 		cycles = (3 + index_cycles);
 	    }
 	    break; // LDS indexed
+	    case 0x4B:
+	    {
+		int index_cycles = indexed_mode();
+
+		uint16_t operand = readWord(extended_address);
+		cmp16(getRegD(), operand);
+		cycles = (4 + index_cycles);
+	    }
+	    break; // CMPD indexed
+	    case 0x4D:
+	    {
+		int index_cycles = indexed_mode();
+
+		uint16_t operand = readWord(extended_address);
+		cmp16(regx, operand);
+		cycles = (4 + index_cycles);
+	    }
+	    break; // CMPX indexed
+	    case 0x4F:
+	    {
+		int index_cycles = indexed_mode();
+
+		uint16_t operand = readWord(extended_address);
+		cmp16(regy, operand);
+		cycles = (4 + index_cycles);
+	    }
+	    break; // CMPX indexed
 	    case 0x58:
 	    {
 		int index_cycles = indexed_mode();
@@ -605,6 +654,14 @@ namespace botnami
 		cycles = 2;
 	    }
 	    break; // INCB
+	    case 0x8B:
+	    {
+		int index_cycles = indexed_mode();
+		uint8_t operand = readByte(extended_address);
+		writeByte(extended_address, inc_internal8(operand));
+		cycles = (4 + index_cycles);
+	    }
+	    break; // INC indexed
 	    case 0x8C:
 	    {
 		rega = dec_internal8(rega);
@@ -617,6 +674,14 @@ namespace botnami
 		cycles = 2;
 	    }
 	    break; // DECB
+	    case 0x8E:
+	    {
+		int index_cycles = indexed_mode();
+		uint8_t operand = readByte(extended_address);
+		writeByte(extended_address, dec_internal8(operand));
+		cycles = (4 + index_cycles);
+	    }
+	    break; // DEC indexed
 	    case 0x8F:
 	    {
 		cycles = rts();
@@ -660,6 +725,11 @@ namespace botnami
 		cycles = 2;
 	    }
 	    break; // ASLA
+	    case 0xAA:
+	    {
+		cycles = bsr();
+	    }
+	    break;
 	    case 0xAB:
 	    {
 		cycles = lbsr();
@@ -926,6 +996,13 @@ namespace botnami
 		stream << "lds #$" << hex << int(arg16) << endl;
 	    }
 	    break;
+	    case 0x4B:
+	    {
+		pc += 1;
+		stream << "cmpd ";
+		indexed_mode_dasm(stream, arg, pc);
+	    }
+	    break;
 	    case 0x58:
 	    {
 		pc += 1;
@@ -1074,8 +1151,22 @@ namespace botnami
 	    case 0x84: stream << "comb"; break;
 	    case 0x89: stream << "inca"; break;
 	    case 0x8A: stream << "incb"; break;
+	    case 0x8B:
+	    {
+		pc += 1;
+		stream << "inc ";
+		indexed_mode_dasm(stream, arg, pc);
+	    }
+	    break;
 	    case 0x8C: stream << "deca"; break;
 	    case 0x8D: stream << "decb"; break;
+	    case 0x8E:
+	    {
+		pc += 1;
+		stream << "dec ";
+		indexed_mode_dasm(stream, arg, pc);
+	    }
+	    break;
 	    case 0x8F: stream << "rts"; break;
 	    case 0x90: stream << "tsta"; break;
 	    case 0x91: stream << "tstb"; break;

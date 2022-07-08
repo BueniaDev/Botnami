@@ -329,6 +329,15 @@ namespace botnami
 		return result;
 	    }
 
+	    uint16_t sub_internal16(uint16_t source, uint16_t operand, bool is_carry = false)
+	    {
+		uint32_t result = (source - operand - is_carry);
+		set_nz<uint16_t>(result);
+		set_v<uint16_t>(source, operand, result);
+		set_c<uint16_t>(result);
+		return result;
+	    }
+
 	    uint8_t and_internal8(uint8_t source, uint8_t operand)
 	    {
 		uint8_t result = (source & operand);
@@ -384,9 +393,19 @@ namespace botnami
 		return add_internal8(source, operand);
 	    }
 
+	    uint8_t adc8(uint8_t source, uint8_t operand)
+	    {
+		return add_internal8(source, operand, is_carry());
+	    }
+
 	    void cmp8(uint8_t source, uint8_t operand)
 	    {
 		sub_internal8(source, operand);
+	    }
+
+	    void cmp16(uint16_t source, uint16_t operand)
+	    {
+		sub_internal16(source, operand);
 	    }
 
 	    uint8_t and8(uint8_t source, uint8_t operand)
@@ -552,6 +571,15 @@ namespace botnami
 	    {
 		pc = pullsp16();
 		return 5;
+	    }
+
+	    int bsr()
+	    {
+		int8_t offs = getimmByte();
+		uint16_t addr = (pc + offs);
+		pushsp16(pc);
+		pc = addr;
+		return 7;
 	    }
 
 	    virtual int executeinstr(uint8_t instr);
