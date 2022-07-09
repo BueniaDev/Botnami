@@ -229,31 +229,31 @@ namespace botnami
 	    break; // PULLS
 	    case 0x10:
 	    {
-		rega = getimmByte();
-		set_nzv(rega);
+		uint8_t operand = getimmByte();
+		rega = load8(operand);
 		cycles = 2;
 	    }
-	    break; // LDA
+	    break; // LDA imm
 	    case 0x11:
 	    {
-		regb = getimmByte();
-		set_nzv(regb);
+		uint8_t operand = getimmByte();
+		regb = load8(operand);
 		cycles = 2;
 	    }
-	    break; // LDB
+	    break; // LDB imm
 	    case 0x12:
 	    {
 		int index_cycles = indexed_mode();
-		rega = readByte(extended_address);
-		set_nzv(rega);
+		uint8_t operand = readByte(extended_address);
+		rega = load8(operand);
 		cycles = (2 + index_cycles);
 	    }
 	    break; // LDA indexed
 	    case 0x13:
 	    {
 		int index_cycles = indexed_mode();
-		regb = readByte(extended_address);
-		set_nzv(regb);
+		uint8_t operand = readByte(extended_address);
+		regb = load8(operand);
 		cycles = (2 + index_cycles);
 	    }
 	    break; // LDB indexed
@@ -429,94 +429,89 @@ namespace botnami
 	    case 0x3A:
 	    {
 		int index_cycles = indexed_mode();
-		set_nzv(rega);
-		writeByte(extended_address, rega);
+		store8(extended_address, rega);
 		cycles = (2 + index_cycles);
 	    }
 	    break; // STA indexed
 	    case 0x3B:
 	    {
 		int index_cycles = indexed_mode();
-		set_nzv(regb);
-		writeByte(extended_address, regb);
+		store8(extended_address, regb);
 		cycles = (2 + index_cycles);
 	    }
 	    break; // STB indexed
 	    case 0x40:
 	    {
 		uint16_t value = getimmWord();
-		setRegD(value);
-		set_nzv(value);
+		setRegD(load16(value));
 		cycles = 3;
 	    }
 	    break; // LDD imm16
 	    case 0x41:
 	    {
 		int index_cycles = indexed_mode();
-		setRegD(readWord(extended_address));
-		set_nzv(getRegD());
+		uint16_t operand = readWord(extended_address);
+		setRegD(load16(operand));
 		cycles = (3 + index_cycles);
 	    }
 	    break; // LDD indexed
 	    case 0x42:
 	    {
-		regx = getimmWord();
-		set_nzv(regx);
+		uint16_t value = getimmWord();
+		regx = load16(value);
 		cycles = 3;
 	    }
 	    break; // LDX imm16
 	    case 0x43:
 	    {
 		int index_cycles = indexed_mode();
-		regx = readWord(extended_address);
-		set_nzv(regx);
+		uint16_t operand = readWord(extended_address);
+		regx = load16(operand);
 		cycles = (3 + index_cycles);
 	    }
 	    break; // LDX indexed
 	    case 0x44:
 	    {
-		regy = getimmWord();
-		set_nzv(regy);
+		uint16_t value = getimmWord();
+		regy = load16(value);
 		cycles = 3;
 	    }
 	    break; // LDY imm16
 	    case 0x45:
 	    {
 		int index_cycles = indexed_mode();
-		regy = readWord(extended_address);
-		set_nzv(regy);
+		uint16_t operand = readWord(extended_address);
+		regy = load16(operand);
 		cycles = (3 + index_cycles);
 	    }
 	    break; // LDY indexed
 	    case 0x46:
 	    {
 		uint16_t value = getimmWord();
-		usp = value;
-		set_nzv(value);
+		usp = load16(value);
 		cycles = 3;
 	    }
 	    break; // LDU imm16
 	    case 0x47:
 	    {
 		int index_cycles = indexed_mode();
-		usp = readWord(extended_address);
-		set_nzv(usp);
+		uint16_t operand = readWord(extended_address);
+		usp = load16(operand);
 		cycles = (3 + index_cycles);
 	    }
 	    break; // LDU indexed
 	    case 0x48:
 	    {
 		uint16_t value = getimmWord();
-		ssp = value;
-		set_nzv(value);
+		ssp = load16(value);
 		cycles = 3;
 	    }
 	    break; // LDS imm16
 	    case 0x49:
 	    {
 		int index_cycles = indexed_mode();
-		ssp = readWord(extended_address);
-		set_nzv(ssp);
+		uint16_t operand = readWord(extended_address);
+		ssp = load16(operand);
 		cycles = (3 + index_cycles);
 	    }
 	    break; // LDS indexed
@@ -603,35 +598,35 @@ namespace botnami
 	    case 0x58:
 	    {
 		int index_cycles = indexed_mode();
-		writeWord(extended_address, getRegD());
+		store16(extended_address, getRegD());
 		cycles = (3 + index_cycles);
 	    }
 	    break; // STD indexed
 	    case 0x59:
 	    {
 		int index_cycles = indexed_mode();
-		writeWord(extended_address, regx);
+		store16(extended_address, regx);
 		cycles = (3 + index_cycles);
 	    }
 	    break; // STX indexed
 	    case 0x5A:
 	    {
 		int index_cycles = indexed_mode();
-		writeWord(extended_address, regx);
+		store16(extended_address, regy);
 		cycles = (3 + index_cycles);
 	    }
 	    break; // STY indexed
 	    case 0x5B:
 	    {
 		int index_cycles = indexed_mode();
-		writeWord(extended_address, usp);
+		store16(extended_address, usp);
 		cycles = (3 + index_cycles);
 	    }
 	    break; // STU indexed
 	    case 0x5C:
 	    {
 		int index_cycles = indexed_mode();
-		writeWord(extended_address, ssp);
+		store16(extended_address, ssp);
 		cycles = (3 + index_cycles);
 	    }
 	    break; // STS indexed

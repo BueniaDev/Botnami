@@ -388,6 +388,30 @@ namespace botnami
 		return result;
 	    }
 
+	    uint8_t load8(uint8_t data)
+	    {
+		set_nzv<uint8_t>(data);
+		return data;
+	    }
+
+	    uint16_t load16(uint16_t data)
+	    {
+		set_nzv<uint16_t>(data);
+		return data;
+	    }
+
+	    void store8(uint16_t addr, uint8_t data)
+	    {
+		set_nzv<uint8_t>(data);
+		writeByte(addr, data);
+	    }
+
+	    void store16(uint16_t addr, uint16_t data)
+	    {
+		set_nzv<uint16_t>(data);
+		writeWord(addr, data);
+	    }
+
 	    uint8_t add8(uint8_t source, uint8_t operand)
 	    {
 		return add_internal8(source, operand);
