@@ -634,102 +634,162 @@ namespace botnami
 	    {
 		cycles = branch(true);
 	    }
-	    break; // BRA
+	    break; // BRA rel8
+	    case 0x61:
+	    {
+		cycles = branch(is_cond_hi());
+	    }
+	    break; // BHI rel8
 	    case 0x62:
 	    {
 		cycles = branch(is_cond_cc());
 	    }
-	    break; // BCC
+	    break; // BCC rel8
 	    case 0x63:
 	    {
 		cycles = branch(is_cond_ne());
 	    }
-	    break; // BNE
+	    break; // BNE rel8
 	    case 0x64:
 	    {
 		cycles = branch(is_cond_vc());
 	    }
-	    break; // BVC
+	    break; // BVC rel8
 	    case 0x65:
 	    {
 		cycles = branch(is_cond_pl());
 	    }
-	    break; // BPL
+	    break; // BPL rel8
+	    case 0x66:
+	    {
+		cycles = branch(is_cond_ge());
+	    }
+	    break; // BGE rel8
+	    case 0x67:
+	    {
+		cycles = branch(is_cond_gt());
+	    }
+	    break; // BGT rel8
 	    case 0x68:
 	    {
 		cycles = lbranchk(true);
 	    }
-	    break; // LBRA
+	    break; // LBRA rel16
+	    case 0x69:
+	    {
+		cycles = lbranchk(is_cond_hi());
+	    }
+	    break; // LBHI rel16
 	    case 0x6A:
 	    {
 		cycles = lbranchk(is_cond_cc());
 	    }
-	    break; // LBCC
+	    break; // LBCC rel16
 	    case 0x6B:
 	    {
 		cycles = lbranchk(is_cond_ne());
 	    }
-	    break; // LBNE
+	    break; // LBNE rel16
 	    case 0x6C:
 	    {
 		cycles = lbranchk(is_cond_vc());
 	    }
-	    break; // LBVC
+	    break; // LBVC rel16
 	    case 0x6D:
 	    {
 		cycles = lbranchk(is_cond_pl());
 	    }
-	    break; // LBPL
+	    break; // LBPL rel16
+	    case 0x6E:
+	    {
+		cycles = lbranchk(is_cond_ge());
+	    }
+	    break; // LBGE rel16
+	    case 0x6F:
+	    {
+		cycles = lbranchk(is_cond_gt());
+	    }
+	    break; // LBGT rel16
 	    case 0x70:
 	    {
 		cycles = branch(false);
 	    }
-	    break; // BNV
+	    break; // BNV rel8
+	    case 0x71:
+	    {
+		cycles = branch(is_cond_ls());
+	    }
+	    break; // BLS rel8
 	    case 0x72:
 	    {
 		cycles = branch(is_cond_cs());
 	    }
-	    break; // BCS
+	    break; // BCS rel8
 	    case 0x73:
 	    {
 		cycles = branch(is_cond_eq());
 	    }
-	    break; // BEQ
+	    break; // BEQ rel8
 	    case 0x74:
 	    {
 		cycles = branch(is_cond_vs());
 	    }
-	    break; // BVS
+	    break; // BVS rel8
 	    case 0x75:
 	    {
 		cycles = branch(is_cond_mi());
 	    }
-	    break; // BMI
+	    break; // BMI rel8
+	    case 0x76:
+	    {
+		cycles = branch(is_cond_lt());
+	    }
+	    break; // BLT rel8
+	    case 0x77:
+	    {
+		cycles = branch(is_cond_le());
+	    }
+	    break; // BLE rel8
 	    case 0x78:
 	    {
 		cycles = lbranchk(false);
 	    }
-	    break; // LBNV
+	    break; // LBNV rel16
+	    case 0x79:
+	    {
+		cycles = lbranchk(is_cond_ls());
+	    }
+	    break; // LBNV rel16
 	    case 0x7A:
 	    {
 		cycles = lbranchk(is_cond_cs());
 	    }
-	    break; // LBCS
+	    break; // LBCS rel16
 	    case 0x7B:
 	    {
 		cycles = lbranchk(is_cond_eq());
 	    }
-	    break; // LBEQ
+	    break; // LBEQ rel16
 	    case 0x7C:
 	    {
 		cycles = lbranchk(is_cond_vs());
 	    }
-	    break; // LBVS
+	    break; // LBVS rel16
 	    case 0x7D:
 	    {
 		cycles = lbranchk(is_cond_mi());
 	    }
-	    break; // LBMI
+	    break; // LBMI rel16
+	    case 0x7E:
+	    {
+		cycles = lbranchk(is_cond_lt());
+	    }
+	    break; // LBLT rel16
+	    case 0x7F:
+	    {
+		cycles = lbranchk(is_cond_le());
+	    }
+	    break; // LBLE rel16
 	    case 0x80:
 	    {
 		set_sign(false);
@@ -946,8 +1006,8 @@ namespace botnami
 	uint8_t arg = readByte(pc);
 	uint16_t arg16 = readWord(pc);
 
-	uint16_t branch_offs = (pc + int8_t(arg));
-	uint16_t lbranch_offs = (pc + int16_t(arg16));
+	uint16_t branch_offs = ((pc + 1) + int8_t(arg));
+	uint16_t lbranch_offs = ((pc + 2) + int16_t(arg16));
 
 	switch (opcode)
 	{
@@ -994,13 +1054,13 @@ namespace botnami
 	    case 0x10:
 	    {
 		pc += 1;
-		stream << "lda " << hex << int(arg);
+		stream << "lda #$" << hex << int(arg);
 	    }
 	    break;
 	    case 0x11:
 	    {
 		pc += 1;
-		stream << "ldb " << hex << int(arg);
+		stream << "ldb #$" << hex << int(arg);
 	    }
 	    break;
 	    case 0x12:
@@ -1347,6 +1407,11 @@ namespace botnami
 		stream << "bra #$" << hex << int(branch_offs);
 	    }
 	    break;
+	    case 0x61:
+	    {
+		stream << "bhi #$" << hex << int(branch_offs);
+	    }
+	    break;
 	    case 0x62:
 	    {
 		stream << "bcc #$" << hex << int(branch_offs);
@@ -1367,9 +1432,24 @@ namespace botnami
 		stream << "bpl #$" << hex << int(branch_offs);
 	    }
 	    break;
+	    case 0x66:
+	    {
+		stream << "bge #$" << hex << int(branch_offs);
+	    }
+	    break;
+	    case 0x67:
+	    {
+		stream << "bgt #$" << hex << int(branch_offs);
+	    }
+	    break;
 	    case 0x68:
 	    {
 		stream << "lbra #$" << hex << int(lbranch_offs);
+	    }
+	    break;
+	    case 0x69:
+	    {
+		stream << "lbhi #$" << hex << int(lbranch_offs);
 	    }
 	    break;
 	    case 0x6A:
@@ -1392,9 +1472,24 @@ namespace botnami
 		stream << "lbpl #$" << hex << int(lbranch_offs);
 	    }
 	    break;
+	    case 0x6E:
+	    {
+		stream << "lbge #$" << hex << int(lbranch_offs);
+	    }
+	    break;
+	    case 0x6F:
+	    {
+		stream << "lbgt #$" << hex << int(lbranch_offs);
+	    }
+	    break;
 	    case 0x70:
 	    {
 		stream << "brn #$" << hex << int(branch_offs);
+	    }
+	    break;
+	    case 0x71:
+	    {
+		stream << "bls #$" << hex << int(branch_offs);
 	    }
 	    break;
 	    case 0x72:
@@ -1417,9 +1512,24 @@ namespace botnami
 		stream << "bmi #$" << hex << int(branch_offs);
 	    }
 	    break;
+	    case 0x76:
+	    {
+		stream << "blt #$" << hex << int(branch_offs);
+	    }
+	    break;
+	    case 0x77:
+	    {
+		stream << "ble #$" << hex << int(branch_offs);
+	    }
+	    break;
 	    case 0x78:
 	    {
 		stream << "lbrn #$" << hex << int(lbranch_offs);
+	    }
+	    break;
+	    case 0x79:
+	    {
+		stream << "lbls #$" << hex << int(lbranch_offs);
 	    }
 	    break;
 	    case 0x7A:
@@ -1440,6 +1550,16 @@ namespace botnami
 	    case 0x7D:
 	    {
 		stream << "lbmi #$" << hex << int(lbranch_offs);
+	    }
+	    break;
+	    case 0x7E:
+	    {
+		stream << "lblt #$" << hex << int(lbranch_offs);
+	    }
+	    break;
+	    case 0x7F:
+	    {
+		stream << "lble #$" << hex << int(lbranch_offs);
 	    }
 	    break;
 	    case 0x80: stream << "clra"; break;

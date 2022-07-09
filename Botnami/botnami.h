@@ -266,6 +266,36 @@ namespace botnami
 		return is_sign();
 	    }
 
+	    bool is_cond_hi()
+	    {
+		return (!is_carry() && !is_zero());
+	    }
+
+	    bool is_cond_ls()
+	    {
+		return (is_carry() || is_zero());
+	    }
+
+	    bool is_cond_ge()
+	    {
+		return (is_sign() == is_overflow());
+	    }
+
+	    bool is_cond_lt()
+	    {
+		return (is_sign() != is_overflow());
+	    }
+
+	    bool is_cond_gt()
+	    {
+		return (!is_zero() && (is_sign() == is_overflow()));
+	    }
+
+	    bool is_cond_le()
+	    {
+		return (is_zero() || (is_sign() != is_overflow()));
+	    }
+
 	    int branch(bool is_cond = true)
 	    {
 		int8_t offs = getimmByte();
