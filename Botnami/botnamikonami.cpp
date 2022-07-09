@@ -245,6 +245,7 @@ namespace botnami
 	    {
 		int index_cycles = indexed_mode();
 		rega = readByte(extended_address);
+		set_nzv(rega);
 		cycles = (2 + index_cycles);
 	    }
 	    break; // LDA indexed
@@ -252,6 +253,7 @@ namespace botnami
 	    {
 		int index_cycles = indexed_mode();
 		regb = readByte(extended_address);
+		set_nzv(regb);
 		cycles = (2 + index_cycles);
 	    }
 	    break; // LDB indexed
