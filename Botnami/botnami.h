@@ -948,6 +948,14 @@ namespace botnami
 
 	    int indexed_mode();
 
+	    int sign_ext()
+	    {
+		uint16_t data = int8_t(regb);
+		set_nz<uint16_t>(data);
+		setRegD(data);
+		return 2;
+	    }
+
 	    uint16_t getRegD()
 	    {
 		return ((rega << 8) | regb);

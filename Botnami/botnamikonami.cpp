@@ -440,6 +440,18 @@ namespace botnami
 		cycles = (2 + index_cycles);
 	    }
 	    break; // STB indexed
+	    case 0x3C:
+	    {
+		status_reg &= getimmByte();
+		cycles = 3;
+	    }
+	    break; // ANDCC imm
+	    case 0x3D:
+	    {
+		status_reg |= getimmByte();
+		cycles = 3;
+	    }
+	    break; // ORCC imm
 	    case 0x40:
 	    {
 		uint16_t value = getimmWord();
@@ -942,6 +954,11 @@ namespace botnami
 		cycles = 2;
 	    }
 	    break; // NOP
+	    case 0xB2:
+	    {
+		cycles = sign_ext();
+	    }
+	    break; // SEX
 	    case 0xB6:
 	    {
 		cycles = bmove();
@@ -1235,6 +1252,18 @@ namespace botnami
 		pc += 1;
 		stream << "stb ";
 		indexed_mode_dasm(stream, arg, pc);
+	    }
+	    break;
+	    case 0x3C:
+	    {
+		pc += 1;
+		stream << "andcc #$" << hex << int(arg);
+	    }
+	    break;
+	    case 0x3D:
+	    {
+		pc += 1;
+		stream << "orcc #$" << hex << int(arg);
 	    }
 	    break;
 	    case 0x40:
@@ -1621,6 +1650,7 @@ namespace botnami
 	    }
 	    break;
 	    case 0xAE: stream << "nop"; break;
+	    case 0xB2: stream << "sex"; break;
 	    case 0xB6: stream << "bmove"; break;
 	    case 0xC2: stream << "clrd"; break;
 	    default: stream << "unk"; break;
