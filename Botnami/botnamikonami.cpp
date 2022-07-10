@@ -389,6 +389,36 @@ namespace botnami
 		cycles = (2 + index_cycles);
 	    }
 	    break; // BITB indexed
+	    case 0x30:
+	    {
+		uint8_t operand = getimmByte();
+		rega = or8(rega, operand);
+		cycles = 2;
+	    }
+	    break; // ORA imm
+	    case 0x31:
+	    {
+		uint8_t operand = getimmByte();
+		regb = or8(regb, operand);
+		cycles = 2;
+	    }
+	    break; // ORB imm
+	    case 0x32:
+	    {
+		int index_cycles = indexed_mode();
+		uint8_t operand = readByte(extended_address);
+		rega = or8(rega, operand);
+		cycles = (2 + index_cycles);
+	    }
+	    break; // ORA indexed
+	    case 0x33:
+	    {
+		int index_cycles = indexed_mode();
+		uint8_t operand = readByte(extended_address);
+		regb = or8(regb, operand);
+		cycles = (2 + index_cycles);
+	    }
+	    break; // ORB indexed
 	    case 0x34:
 	    {
 		uint8_t operand = getimmByte();
@@ -411,6 +441,14 @@ namespace botnami
 		cycles = (2 + index_cycles);
 	    }
 	    break; // CMPA indexed
+	    case 0x37:
+	    {
+		int index_cycles = indexed_mode();
+		uint8_t operand = readByte(extended_address);
+		cmp8(regb, operand);
+		cycles = (2 + index_cycles);
+	    }
+	    break; // CMPB indexed
 	    case 0x38:
 	    {
 		uint8_t value = getimmByte();
@@ -452,6 +490,16 @@ namespace botnami
 		cycles = 3;
 	    }
 	    break; // ORCC imm
+	    case 0x3E:
+	    {
+		cycles = exchange();
+	    }
+	    break; // EXG
+	    case 0x3F:
+	    {
+		cycles = tfr();
+	    }
+	    break; // EXG
 	    case 0x40:
 	    {
 		uint16_t value = getimmWord();
@@ -607,6 +655,20 @@ namespace botnami
 		cycles = (4 + index_cycles);
 	    }
 	    break; // CMPS indexed
+	    case 0x54:
+	    {
+		uint16_t operand = getimmWord();
+		setRegD(add16(getRegD(), operand));
+		cycles = 4;
+	    }
+	    break; // ADDD imm
+	    case 0x56:
+	    {
+		uint16_t operand = getimmWord();
+		setRegD(sub16(getRegD(), operand));
+		cycles = 4;
+	    }
+	    break; // SUBD imm
 	    case 0x58:
 	    {
 		int index_cycles = indexed_mode();
@@ -922,6 +984,18 @@ namespace botnami
 		cycles = 2;
 	    }
 	    break; // LSRB
+	    case 0x99:
+	    {
+		rega = asr8(rega);
+		cycles = 2;
+	    }
+	    break; // ASRA
+	    case 0x9A:
+	    {
+		regb = asr8(regb);
+		cycles = 2;
+	    }
+	    break; // ASRB
 	    case 0x9C:
 	    {
 		rega = asl8(rega);
@@ -934,6 +1008,26 @@ namespace botnami
 		cycles = 2;
 	    }
 	    break; // ASLB
+	    case 0x9F:
+	    {
+		cycles = rti();
+	    }
+	    break; // RTI
+	    case 0xA8:
+	    {
+		int index_cycles = indexed_mode();
+		pc = extended_address;
+		cycles = index_cycles;
+	    }
+	    break; // JMP indexed
+	    case 0xA9:
+	    {
+		int index_cycles = indexed_mode();
+		pushsp16(pc);
+		pc = extended_address;
+		cycles = (4 + index_cycles);
+	    }
+	    break; // JSR indexed
 	    case 0xAA:
 	    {
 		cycles = bsr();
@@ -1235,6 +1329,32 @@ namespace botnami
 		indexed_mode_dasm(stream, arg, pc);
 	    }
 	    break;
+	    case 0x30:
+	    {
+		pc += 1;
+		stream << "ora #$" << hex << int(arg);
+	    }
+	    break;
+	    case 0x31:
+	    {
+		pc += 1;
+		stream << "orb #$" << hex << int(arg);
+	    }
+	    break;
+	    case 0x32:
+	    {
+		pc += 1;
+		stream << "ora ";
+		indexed_mode_dasm(stream, arg, pc);
+	    }
+	    break;
+	    case 0x33:
+	    {
+		pc += 1;
+		stream << "orb ";
+		indexed_mode_dasm(stream, arg, pc);
+	    }
+	    break;
 	    case 0x34:
 	    {
 		pc += 1;
@@ -1251,6 +1371,13 @@ namespace botnami
 	    {
 		pc += 1;
 		stream << "cmpa ";
+		indexed_mode_dasm(stream, arg, pc);
+	    }
+	    break;
+	    case 0x37:
+	    {
+		pc += 1;
+		stream << "cmpb ";
 		indexed_mode_dasm(stream, arg, pc);
 	    }
 	    break;
@@ -1291,6 +1418,18 @@ namespace botnami
 	    {
 		pc += 1;
 		stream << "orcc #$" << hex << int(arg);
+	    }
+	    break;
+	    case 0x3E:
+	    {
+		pc += 1;
+		stream << "exg";
+	    }
+	    break;
+	    case 0x3F:
+	    {
+		pc += 1;
+		stream << "tfr";
 	    }
 	    break;
 	    case 0x40:
@@ -1421,6 +1560,18 @@ namespace botnami
 		pc += 1;
 		stream << "cmps ";
 		indexed_mode_dasm(stream, arg, pc);
+	    }
+	    break;
+	    case 0x54:
+	    {
+		pc += 2;
+		stream << "addd #$" << hex << int(arg16) << endl;
+	    }
+	    break;
+	    case 0x56:
+	    {
+		pc += 2;
+		stream << "subd #$" << hex << int(arg16) << endl;
 	    }
 	    break;
 	    case 0x58:
@@ -1659,8 +1810,25 @@ namespace botnami
 	    break;
 	    case 0x93: stream << "lsra"; break;
 	    case 0x94: stream << "lsrb"; break;
+	    case 0x99: stream << "asra"; break;
+	    case 0x9A: stream << "asrb"; break;
 	    case 0x9C: stream << "asla"; break;
 	    case 0x9D: stream << "aslb"; break;
+	    case 0x9F: stream << "rti"; break;
+	    case 0xA8:
+	    {
+		pc += 1;
+		stream << "jmp ";
+		indexed_mode_dasm(stream, arg, pc);
+	    }
+	    break;
+	    case 0xA9:
+	    {
+		pc += 1;
+		stream << "jsr ";
+		indexed_mode_dasm(stream, arg, pc);
+	    }
+	    break;
 	    case 0xAA:
 	    {
 		stream << "bsr #$" << hex << int(branch_offs);

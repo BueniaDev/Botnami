@@ -361,6 +361,15 @@ namespace botnami
 		return result;
 	    }
 
+	    uint16_t add_internal16(uint16_t source, uint16_t operand, bool is_carry = false)
+	    {
+		uint32_t result = (source + operand + is_carry);
+		set_nz<uint16_t>(result);
+		set_v<uint16_t>(source, operand, result);
+		set_c<uint16_t>(result);
+		return result;
+	    }
+
 	    uint8_t sub_internal8(uint8_t source, uint8_t operand, bool is_carry = false)
 	    {
 		uint16_t result = (source - operand - is_carry);
@@ -387,12 +396,28 @@ namespace botnami
 		return result;
 	    }
 
+	    uint8_t or_internal8(uint8_t source, uint8_t operand)
+	    {
+		uint8_t result = (source | operand);
+		set_overflow(false);
+		set_nz(result);
+		return result;
+	    }
+
 	    uint8_t asl_internal8(uint8_t source)
 	    {
 		uint16_t result = (source << 1);
 		set_nz<uint8_t>(result);
 		set_v<uint8_t>(source, source, result);
 		set_c<uint8_t>(result);
+		return result;
+	    }
+
+	    uint8_t asr_internal8(uint8_t source)
+	    {
+		set_carry(testbit(source, 0));
+		uint8_t result = (int8_t(source) >> 1);
+		set_nz<uint8_t>(result);
 		return result;
 	    }
 
@@ -458,6 +483,11 @@ namespace botnami
 		return add_internal8(source, operand);
 	    }
 
+	    uint16_t add16(uint16_t source, uint16_t operand)
+	    {
+		return add_internal16(source, operand);
+	    }
+
 	    uint8_t adc8(uint8_t source, uint8_t operand)
 	    {
 		return add_internal8(source, operand, is_carry());
@@ -466,6 +496,11 @@ namespace botnami
 	    uint8_t sub8(uint8_t source, uint8_t operand)
 	    {
 		return sub_internal8(source, operand);
+	    }
+
+	    uint16_t sub16(uint16_t source, uint16_t operand)
+	    {
+		return sub_internal16(source, operand);
 	    }
 
 	    uint8_t sbc8(uint8_t source, uint8_t operand)
@@ -488,6 +523,11 @@ namespace botnami
 		return and_internal8(source, operand);
 	    }
 
+	    uint8_t or8(uint8_t source, uint8_t operand)
+	    {
+		return or_internal8(source, operand);
+	    }
+
 	    void bit8(uint8_t source, uint8_t operand)
 	    {
 		and_internal8(source, operand);
@@ -496,6 +536,11 @@ namespace botnami
 	    uint8_t asl8(uint8_t source)
 	    {
 		return asl_internal8(source);
+	    }
+
+	    uint8_t asr8(uint8_t source)
+	    {
+		return asr_internal8(source);
 	    }
 
 	    uint8_t lsr8(uint8_t source)
@@ -651,6 +696,26 @@ namespace botnami
 	    {
 		pc = pullsp16();
 		return 5;
+	    }
+
+	    int rti()
+	    {
+		int cycles = 6;
+		status_reg = pullsp16();
+
+		if (testbit(status_reg, 7))
+		{
+		    rega = pullsp();
+		    regb = pullsp();
+		    regdp = pullsp();
+		    regx = pullsp16();
+		    regy = pullsp16();
+		    usp = pullsp16();
+		    cycles += 9;
+		}
+
+		pc = pullsp16();
+		return cycles;
 	    }
 
 	    int bsr()
@@ -1057,6 +1122,70 @@ namespace botnami
 	    }
 
 	    void indexed_mode_dasm(ostream &stream, uint8_t mode, size_t &pc);
+
+	    struct exg_reg
+	    {
+		uint8_t byte_val = 0;
+		uint16_t word_val = 0;
+	    };
+
+	    exg_reg read_exg_reg(uint8_t reg)
+	    {
+		exg_reg result;
+		result.word_val = 0xFF;
+
+		switch (reg & 0x7)
+		{
+		    case 0: result.word_val = rega; break; // A
+		    case 1: result.word_val = regb; break; // B
+		    case 2: result.word_val = regx; break; // X
+		    case 3: result.word_val = regy; break; // Y
+		    case 4: result.word_val = ssp; break; // S
+		    case 5: result.word_val = usp; break; // U
+		}
+
+		result.byte_val = uint8_t(result.word_val);
+		return result;
+	    }
+
+	    void write_exg_reg(uint8_t reg, exg_reg value)
+	    {
+		switch (reg & 0x7)
+		{
+		    case 0: rega = value.byte_val; break; // A
+		    case 1: regb = value.byte_val; break; // B
+		    case 2: regx = value.word_val; break; // X
+		    case 3: regy = value.word_val; break; // Y
+		    case 4: ssp = value.word_val; break; // S
+		    case 5: usp = value.word_val; break; // U
+		}
+	    }
+
+	    int exchange()
+	    {
+		uint8_t param = getimmByte();
+		int r1 = (param & 0xF);
+		int r2 = (param >> 4);
+
+		auto reg1 = read_exg_reg(r1);
+		auto reg2 = read_exg_reg(r2);
+
+		write_exg_reg(r1, reg2);
+		write_exg_reg(r2, reg1);
+		return 7;
+	    }
+
+	    int tfr()
+	    {
+		uint8_t param = getimmByte();
+		int r1 = (param & 0xF);
+		int r2 = (param >> 4);
+
+		auto reg = read_exg_reg(r1);
+		write_exg_reg(r2, reg);
+		return 5;
+	    }
+	    
     };
 };
 
