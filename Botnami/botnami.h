@@ -84,11 +84,18 @@ namespace botnami
 	    virtual void debugoutput(bool print_disassembly = true);
 	    virtual size_t disassembleinstr(ostream &stream, size_t pc);
 
+	    void fireIRQ(bool line = true);
+
 	    void setinterface(BotnamiInterface &cb);
 
 	    bool is_half()
 	    {
 		return testbit(status_reg, 5);
+	    }
+
+	    bool is_irq()
+	    {
+		return testbit(status_reg, 4);
 	    }
 
 	    bool is_sign()
@@ -145,6 +152,10 @@ namespace botnami
 	    uint16_t pc = 0;
 	    uint16_t ssp = 0;
 	    uint16_t usp = 0;
+
+	    bool is_irq_pending = false;
+
+	    virtual int handleInterrupts();
 
 	    virtual void setStatus()
 	    {
@@ -919,7 +930,7 @@ namespace botnami
 	    }
 
 	    int executeinstr(uint8_t instr);
-	    void debugoutput(bool print_disassembly = false);
+	    void debugoutput(bool print_disassembly = true);
 	    size_t disassembleinstr(ostream &stream, size_t pc);
 
 	    Botnami6809Status getStatus()
@@ -929,6 +940,8 @@ namespace botnami
 
 	private:
 	    uint16_t extended_address = 0;
+
+	    int takeIRQ();
 
 	    void setStatus()
 	    {
@@ -947,6 +960,8 @@ namespace botnami
 	    Botnami6809Status status;
 
 	    int indexed_mode();
+
+	    int handleInterrupts();
 
 	    int sign_ext()
 	    {

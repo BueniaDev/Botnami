@@ -162,12 +162,23 @@ namespace botnami
 	}
     }
 
+    void BotnamiCPU::fireIRQ(bool line)
+    {
+	is_irq_pending = line;
+    }
+
+    int BotnamiCPU::handleInterrupts()
+    {
+	return 0;
+    }
+
     int BotnamiCPU::executenextinstr()
     {
+	int irq_cycles = handleInterrupts();
 	uint8_t opcode = readOpcode();
 	int cycles = executeinstr(opcode);
 	setStatus();
-	return cycles;
+	return (cycles + irq_cycles);
     }
 
     void BotnamiCPU::debugoutput(bool print_disassembly)
