@@ -36,7 +36,7 @@ class BotnamiTestCPU : public BotnamiInterface
 	void run_instr()
 	{
 	    core.executenextinstr();
-	    core.debugoutput();
+	    // core.debugoutput();
 	}
 
 	uint8_t readByte(uint16_t addr)

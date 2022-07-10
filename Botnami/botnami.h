@@ -210,14 +210,6 @@ namespace botnami
 	    }
 
 	    template<typename T>
-	    void set_nzv(T data)
-	    {
-		set_n(data);
-		set_z(data);
-		set_v(data, T(0), uint32_t(data));
-	    }
-
-	    template<typename T>
 	    void set_c(uint32_t result)
 	    {
 		int high_bit = (sizeof(T) * 8);
@@ -416,17 +408,18 @@ namespace botnami
 
 	    uint8_t asl_internal8(uint8_t source)
 	    {
-		uint16_t result = (source << 1);
+		set_carry(testbit(source, 7));
+		uint8_t result = (source << 1);
 		set_nz<uint8_t>(result);
-		set_v<uint8_t>(source, source, result);
-		set_c<uint8_t>(result);
+		set_overflow(testbit((source ^ result), 7));
 		return result;
 	    }
 
 	    uint8_t asr_internal8(uint8_t source)
 	    {
 		set_carry(testbit(source, 0));
-		uint8_t result = (int8_t(source) >> 1);
+		bool bit7 = testbit(source, 7);
+		uint8_t result = ((source >> 1) | (bit7 << 7));
 		set_nz<uint8_t>(result);
 		return result;
 	    }
@@ -436,6 +429,16 @@ namespace botnami
 		set_carry(testbit(source, 0));
 		uint8_t result = (source >> 1);
 		set_nz<uint8_t>(result);
+		return result;
+	    }
+
+	    uint8_t rol_internal8(uint8_t source)
+	    {
+		bool new_carry = testbit(source, 7);
+		uint8_t result = ((source << 1) | is_carry());
+		set_nz<uint8_t>(result);
+		set_overflow(testbit((source ^ result), 7));
+		set_carry(new_carry);
 		return result;
 	    }
 
@@ -466,25 +469,44 @@ namespace botnami
 
 	    uint8_t load8(uint8_t data)
 	    {
-		set_nzv<uint8_t>(data);
+		set_overflow(false);
+		set_nz<uint8_t>(data);
 		return data;
+	    }
+
+	    void tst8(uint8_t data)
+	    {
+		load8(data);
+	    }
+
+	    template<typename T>
+	    T clear()
+	    {
+		set_sign(false);
+		set_zero(true);
+		set_overflow(false);
+		set_carry(false);
+		return T(0);
 	    }
 
 	    uint16_t load16(uint16_t data)
 	    {
-		set_nzv<uint16_t>(data);
+		set_overflow(false);
+		set_nz<uint16_t>(data);
 		return data;
 	    }
 
 	    void store8(uint16_t addr, uint8_t data)
 	    {
-		set_nzv<uint8_t>(data);
+		set_overflow(false);
+		set_nz<uint8_t>(data);
 		writeByte(addr, data);
 	    }
 
 	    void store16(uint16_t addr, uint16_t data)
 	    {
-		set_nzv<uint16_t>(data);
+		set_overflow(false);
+		set_nz<uint16_t>(data);
 		writeWord(addr, data);
 	    }
 
@@ -561,6 +583,11 @@ namespace botnami
 	    uint8_t lsr8(uint8_t source)
 	    {
 		return lsr_internal8(source);
+	    }
+
+	    uint8_t rol8(uint8_t source)
+	    {
+		return rol_internal8(source);
 	    }
 
 	    uint8_t com8(uint8_t source)
@@ -740,6 +767,12 @@ namespace botnami
 		pushsp16(pc);
 		pc = addr;
 		return 7;
+	    }
+
+	    int abx()
+	    {
+		regx += regb;
+		return 3;
 	    }
 
 	    virtual int executeinstr(uint8_t instr);

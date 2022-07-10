@@ -948,32 +948,20 @@ namespace botnami
 	    break; // LBLE rel16
 	    case 0x80:
 	    {
-		set_sign(false);
-		set_zero(true);
-		set_carry(false);
-		set_overflow(false);
-		rega = 0;
+		rega = clear<uint8_t>();
 		cycles = 2;
 	    }
 	    break; // CLRA
 	    case 0x81:
 	    {
-		set_sign(false);
-		set_zero(true);
-		set_carry(false);
-		set_overflow(false);
-		regb = 0;
+		regb = clear<uint8_t>();
 		cycles = 2;
 	    }
 	    break; // CLRB
 	    case 0x82:
 	    {
 		int index_cycles = indexed_mode();
-		set_sign(false);
-		set_zero(true);
-		set_carry(false);
-		set_overflow(false);
-		writeByte(extended_address, 0);
+		writeByte(extended_address, clear<uint8_t>());
 		cycles = (4 + index_cycles);
 	    }
 	    break; // CLR indexed
@@ -1036,13 +1024,13 @@ namespace botnami
 	    break; // RTS
 	    case 0x90:
 	    {
-		set_nzv<uint8_t>(rega);
+		tst8(rega);
 		cycles = 4;
 	    }
 	    break; // TSTA
 	    case 0x91:
 	    {
-		set_nzv<uint8_t>(rega);
+		tst8(rega);
 		cycles = 4;
 	    }
 	    break; // TSTB
@@ -1050,7 +1038,7 @@ namespace botnami
 	    {
 		int index_cycles = indexed_mode();
 		uint8_t operand = readByte(extended_address);
-		set_nzv<uint8_t>(operand);
+		tst8(operand);
 		cycles = (4 + index_cycles);
 	    }
 	    break; // TST indexed
@@ -1095,6 +1083,18 @@ namespace botnami
 		cycles = rti();
 	    }
 	    break; // RTI
+	    case 0xA0:
+	    {
+		rega = rol8(rega);
+		cycles = 2;
+	    }
+	    break; // ROLA
+	    case 0xA1:
+	    {
+		regb = rol8(regb);
+		cycles = 2;
+	    }
+	    break; // ROLB
 	    case 0xA8:
 	    {
 		int index_cycles = indexed_mode();
@@ -1130,6 +1130,11 @@ namespace botnami
 		cycles = 2;
 	    }
 	    break; // NOP
+	    case 0xB0:
+	    {
+		cycles = abx();
+	    }
+	    break; // ABX
 	    case 0xB2:
 	    {
 		cycles = sign_ext();
@@ -1142,11 +1147,7 @@ namespace botnami
 	    break; // BMOVE
 	    case 0xC2:
 	    {
-		set_sign(false);
-		set_zero(true);
-		set_carry(false);
-		set_overflow(false);
-		setRegD(0);
+		setRegD(clear<uint16_t>());
 		cycles = 2;
 	    }
 	    break; // CLRD
@@ -1954,6 +1955,8 @@ namespace botnami
 	    case 0x9C: stream << "asla"; break;
 	    case 0x9D: stream << "aslb"; break;
 	    case 0x9F: stream << "rti"; break;
+	    case 0xA0: stream << "rola"; break;
+	    case 0xA1: stream << "rolb"; break;
 	    case 0xA8:
 	    {
 		pc += 1;
@@ -1984,6 +1987,7 @@ namespace botnami
 	    }
 	    break;
 	    case 0xAE: stream << "nop"; break;
+	    case 0xB0: stream << "abx"; break;
 	    case 0xB2: stream << "sex"; break;
 	    case 0xB6: stream << "bmove"; break;
 	    case 0xC2: stream << "clrd"; break;
