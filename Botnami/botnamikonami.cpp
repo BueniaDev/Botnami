@@ -1074,18 +1074,7 @@ namespace botnami
 	return cycles;
     }
 
-    int BotnamiKonami2::handleInterrupts()
-    {
-	int cycles = 0;
-	if (!is_irq() && is_irq_pending)
-	{
-	    cycles = takeIRQ();
-	}
-
-	return cycles;
-    }
-
-    int BotnamiKonami2::takeIRQ()
+    int BotnamiKonami2::handleIRQ()
     {
 	status_reg = setbit(status_reg, 7);
 	pushsp16(pc);

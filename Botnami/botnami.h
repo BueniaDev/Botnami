@@ -155,7 +155,9 @@ namespace botnami
 
 	    bool is_irq_pending = false;
 
-	    virtual int handleInterrupts();
+	    virtual int handleIRQ();
+
+	    bool isIRQPending();
 
 	    virtual void setStatus()
 	    {
@@ -701,7 +703,7 @@ namespace botnami
 	    int rti()
 	    {
 		int cycles = 6;
-		status_reg = pullsp16();
+		status_reg = pullsp();
 
 		if (testbit(status_reg, 7))
 		{
@@ -1006,7 +1008,7 @@ namespace botnami
 	private:
 	    uint16_t extended_address = 0;
 
-	    int takeIRQ();
+	    int handleIRQ();
 
 	    void setStatus()
 	    {

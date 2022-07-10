@@ -167,18 +167,38 @@ namespace botnami
 	is_irq_pending = line;
     }
 
-    int BotnamiCPU::handleInterrupts()
+    int BotnamiCPU::handleIRQ()
     {
 	return 0;
     }
 
+    bool BotnamiCPU::isIRQPending()
+    {
+	if (!is_irq() && is_irq_pending)
+	{
+	    return true;
+	}
+	else
+	{
+	    return false;
+	}
+    }
+
     int BotnamiCPU::executenextinstr()
     {
-	int irq_cycles = handleInterrupts();
-	uint8_t opcode = readOpcode();
-	int cycles = executeinstr(opcode);
+	int cycles = 0;
+	if (isIRQPending())
+	{
+	    cycles = handleIRQ();
+	}
+	else
+	{
+	    uint8_t opcode = readOpcode();
+	    cycles = executeinstr(opcode);
+	}
+
 	setStatus();
-	return (cycles + irq_cycles);
+	return cycles;
     }
 
     void BotnamiCPU::debugoutput(bool print_disassembly)
