@@ -406,6 +406,14 @@ namespace botnami
 		return result;
 	    }
 
+	    uint8_t eor_internal8(uint8_t source, uint8_t operand)
+	    {
+		uint8_t result = (source ^ operand);
+		set_overflow(false);
+		set_nz(result);
+		return result;
+	    }
+
 	    uint8_t asl_internal8(uint8_t source)
 	    {
 		uint16_t result = (source << 1);
@@ -528,6 +536,11 @@ namespace botnami
 	    uint8_t or8(uint8_t source, uint8_t operand)
 	    {
 		return or_internal8(source, operand);
+	    }
+
+	    uint8_t eor8(uint8_t source, uint8_t operand)
+	    {
+		return eor_internal8(source, operand);
 	    }
 
 	    void bit8(uint8_t source, uint8_t operand)

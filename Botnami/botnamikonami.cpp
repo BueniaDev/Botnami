@@ -20,7 +20,11 @@
 using namespace botnami;
 using namespace std;
 
-// KONAMI-2 opcode logic (WIP)
+// KONAMI-2 opcode logic
+//
+// TODO list:
+// Implement remaining instructions
+// Add FIRQ and NMI support
 
 namespace botnami
 {
@@ -301,6 +305,22 @@ namespace botnami
 		cycles = 2;
 	    }
 	    break; // ADCB imm
+	    case 0x1A:
+	    {
+		int index_cycles = indexed_mode();
+		uint8_t operand = readByte(extended_address);
+		rega = adc8(rega, operand);
+		cycles = (2 + index_cycles);
+	    }
+	    break; // ADCA indexed
+	    case 0x1B:
+	    {
+		int index_cycles = indexed_mode();
+		uint8_t operand = readByte(extended_address);
+		regb = adc8(regb, operand);
+		cycles = (2 + index_cycles);
+	    }
+	    break; // ADCB indexed
 	    case 0x1C:
 	    {
 		uint8_t operand = getimmByte();
@@ -315,6 +335,22 @@ namespace botnami
 		cycles = 2;
 	    }
 	    break; // SUBB imm
+	    case 0x1E:
+	    {
+		int index_cycles = indexed_mode();
+		uint8_t operand = readByte(extended_address);
+		rega = sub8(rega, operand);
+		cycles = (2 + index_cycles);
+	    }
+	    break; // SUBA indexed
+	    case 0x1F:
+	    {
+		int index_cycles = indexed_mode();
+		uint8_t operand = readByte(extended_address);
+		regb = sub8(regb, operand);
+		cycles = (2 + index_cycles);
+	    }
+	    break; // SUBB indexed
 	    case 0x20:
 	    {
 		uint8_t operand = getimmByte();
@@ -329,6 +365,22 @@ namespace botnami
 		cycles = 2;
 	    }
 	    break; // SBCB imm
+	    case 0x22:
+	    {
+		int index_cycles = indexed_mode();
+		uint8_t operand = readByte(extended_address);
+		rega = sbc8(rega, operand);
+		cycles = (2 + index_cycles);
+	    }
+	    break; // SBCA indexed
+	    case 0x23:
+	    {
+		int index_cycles = indexed_mode();
+		uint8_t operand = readByte(extended_address);
+		regb = sbc8(regb, operand);
+		cycles = (2 + index_cycles);
+	    }
+	    break; // SBCB indexed
 	    case 0x24:
 	    {
 		uint8_t operand = getimmByte();
@@ -389,6 +441,36 @@ namespace botnami
 		cycles = (2 + index_cycles);
 	    }
 	    break; // BITB indexed
+	    case 0x2C:
+	    {
+		uint8_t operand = getimmByte();
+		rega = eor8(rega, operand);
+		cycles = 2;
+	    }
+	    break; // EORA imm
+	    case 0x2D:
+	    {
+		uint8_t operand = getimmByte();
+		regb = eor8(regb, operand);
+		cycles = 2;
+	    }
+	    break; // EORB imm
+	    case 0x2E:
+	    {
+		int index_cycles = indexed_mode();
+		uint8_t operand = readByte(extended_address);
+		rega = eor8(rega, operand);
+		cycles = (2 + index_cycles);
+	    }
+	    break; // EORA indexed
+	    case 0x2F:
+	    {
+		int index_cycles = indexed_mode();
+		uint8_t operand = readByte(extended_address);
+		regb = eor8(regb, operand);
+		cycles = (2 + index_cycles);
+	    }
+	    break; // EORB indexed
 	    case 0x30:
 	    {
 		uint8_t operand = getimmByte();
@@ -1242,6 +1324,20 @@ namespace botnami
 		stream << "adcb #$" << hex << int(arg);
 	    }
 	    break;
+	    case 0x1A:
+	    {
+		pc += 1;
+		stream << "adca ";
+		indexed_mode_dasm(stream, arg, pc);
+	    }
+	    break;
+	    case 0x1B:
+	    {
+		pc += 1;
+		stream << "adcb ";
+		indexed_mode_dasm(stream, arg, pc);
+	    }
+	    break;
 	    case 0x1C:
 	    {
 		pc += 1;
@@ -1254,6 +1350,20 @@ namespace botnami
 		stream << "subb #$" << hex << int(arg);
 	    }
 	    break;
+	    case 0x1E:
+	    {
+		pc += 1;
+		stream << "suba ";
+		indexed_mode_dasm(stream, arg, pc);
+	    }
+	    break;
+	    case 0x1F:
+	    {
+		pc += 1;
+		stream << "subb ";
+		indexed_mode_dasm(stream, arg, pc);
+	    }
+	    break;
 	    case 0x20:
 	    {
 		pc += 1;
@@ -1264,6 +1374,20 @@ namespace botnami
 	    {
 		pc += 1;
 		stream << "sbcb #$" << hex << int(arg);
+	    }
+	    break;
+	    case 0x22:
+	    {
+		pc += 1;
+		stream << "sbca ";
+		indexed_mode_dasm(stream, arg, pc);
+	    }
+	    break;
+	    case 0x23:
+	    {
+		pc += 1;
+		stream << "sbcb ";
+		indexed_mode_dasm(stream, arg, pc);
 	    }
 	    break;
 	    case 0x24:
@@ -1315,6 +1439,32 @@ namespace botnami
 	    {
 		pc += 1;
 		stream << "bitb ";
+		indexed_mode_dasm(stream, arg, pc);
+	    }
+	    break;
+	    case 0x2C:
+	    {
+		pc += 1;
+		stream << "eora #$" << hex << int(arg);
+	    }
+	    break;
+	    case 0x2D:
+	    {
+		pc += 1;
+		stream << "eorb #$" << hex << int(arg);
+	    }
+	    break;
+	    case 0x2E:
+	    {
+		pc += 1;
+		stream << "eora ";
+		indexed_mode_dasm(stream, arg, pc);
+	    }
+	    break;
+	    case 0x2F:
+	    {
+		pc += 1;
+		stream << "eorb ";
 		indexed_mode_dasm(stream, arg, pc);
 	    }
 	    break;
