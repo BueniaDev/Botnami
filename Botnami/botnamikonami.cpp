@@ -744,6 +744,15 @@ namespace botnami
 		cycles = 4;
 	    }
 	    break; // ADDD imm
+	    case 0x55:
+	    {
+		int index_cycles = indexed_mode();
+
+		uint16_t operand = readWord(extended_address);
+		setRegD(add16(getRegD(), operand));
+		cycles = (4 + index_cycles);
+	    }
+	    break; // ADDD indexed
 	    case 0x56:
 	    {
 		uint16_t operand = getimmWord();
@@ -751,6 +760,15 @@ namespace botnami
 		cycles = 4;
 	    }
 	    break; // SUBD imm
+	    case 0x57:
+	    {
+		int index_cycles = indexed_mode();
+
+		uint16_t operand = readWord(extended_address);
+		setRegD(sub16(getRegD(), operand));
+		cycles = (4 + index_cycles);
+	    }
+	    break; // SUBD indexed
 	    case 0x58:
 	    {
 		int index_cycles = indexed_mode();
@@ -1708,10 +1726,24 @@ namespace botnami
 		stream << "addd #$" << hex << int(arg16) << endl;
 	    }
 	    break;
+	    case 0x55:
+	    {
+		pc += 1;
+		stream << "addd ";
+		indexed_mode_dasm(stream, arg, pc);
+	    }
+	    break;
 	    case 0x56:
 	    {
 		pc += 2;
 		stream << "subd #$" << hex << int(arg16) << endl;
+	    }
+	    break;
+	    case 0x57:
+	    {
+		pc += 1;
+		stream << "subd ";
+		indexed_mode_dasm(stream, arg, pc);
 	    }
 	    break;
 	    case 0x58:
