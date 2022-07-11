@@ -1253,6 +1253,20 @@ namespace botnami
 		cycles = (4 + index_cycles);
 	    }
 	    break; // CLR16 indexed
+	    case 0xC4:
+	    {
+		setRegD(neg16(getRegD()));
+		cycles = 2;
+	    }
+	    break; // NEGD
+	    case 0xC5:
+	    {
+		int index_cycles = indexed_mode();
+		uint16_t operand = readWord(extended_address);
+		writeWord(extended_address, neg16(operand));
+		cycles = (6 + index_cycles);
+	    }
+	    break; // NEG16 indexed
 	    case 0xC6:
 	    {
 		setRegD(inc_internal16(getRegD()));
@@ -1281,6 +1295,24 @@ namespace botnami
 		cycles = (6 + index_cycles);
 	    }
 	    break; // DEC16 indexed
+	    case 0xCC:
+	    {
+		rega = abs8(rega);
+		cycles = 2;
+	    }
+	    break; // ABSA
+	    case 0xCD:
+	    {
+		regb = abs8(regb);
+		cycles = 2;
+	    }
+	    break; // ABSB
+	    case 0xCE:
+	    {
+		setRegD(abs16(getRegD()));
+		cycles = 2;
+	    }
+	    break; // ABSD
 	    case 0xCF:
 	    {
 		cycles = bset();
@@ -2199,6 +2231,14 @@ namespace botnami
 		indexed_mode_dasm(stream, arg, pc);
 	    }
 	    break;
+	    case 0xC4: stream << "negd"; break;
+	    case 0xC5:
+	    {
+		pc += 1;
+		stream << "neg16 ";
+		indexed_mode_dasm(stream, arg, pc);
+	    }
+	    break;
 	    case 0xC6: stream << "incd"; break;
 	    case 0xC7:
 	    {
@@ -2215,6 +2255,9 @@ namespace botnami
 		indexed_mode_dasm(stream, arg, pc);
 	    }
 	    break;
+	    case 0xCC: stream << "absa"; break;
+	    case 0xCD: stream << "absb"; break;
+	    case 0xCE: stream << "absd"; break;
 	    case 0xCF: stream << "bset"; break;
 	    case 0xD0: stream << "bset2"; break;
 	    default: stream << "unk"; break;

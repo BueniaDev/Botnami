@@ -503,6 +503,45 @@ namespace botnami
 		return result;
 	    }
 
+	    uint16_t neg_internal16(uint16_t data)
+	    {
+		uint16_t result = -data;
+		set_nz<uint16_t>(result);
+		set_overflow(data == 0x8000);
+		set_carry(data != 0x0000);
+		return result;
+	    }
+
+	    uint8_t abs8(uint8_t data)
+	    {
+		uint16_t result = data;
+
+		if (testbit(data, 7))
+		{
+		    result = -result;
+		}
+
+		set_nz<uint8_t>(result);
+		set_overflow(data == 0x80);
+		set_carry(testbit(data, 7));
+		return result;
+	    }
+
+	    uint16_t abs16(uint16_t data)
+	    {
+		uint32_t result = data;
+
+		if (testbit(data, 15))
+		{
+		    result = -result;
+		}
+
+		set_nz<uint16_t>(result);
+		set_overflow(data == 0x8000);
+		set_carry(testbit(data, 15));
+		return result;
+	    }
+
 	    uint8_t load8(uint8_t data)
 	    {
 		set_overflow(false);
@@ -639,6 +678,11 @@ namespace botnami
 	    uint8_t neg8(uint8_t source)
 	    {
 		return neg_internal8(source);
+	    }
+
+	    uint16_t neg16(uint16_t source)
+	    {
+		return neg_internal16(source);
 	    }
 
 	    int pushs()
