@@ -1158,6 +1158,11 @@ namespace botnami
 		cycles = sign_ext();
 	    }
 	    break; // SEX
+	    case 0xB3:
+	    {
+		cycles = mul();
+	    }
+	    break; // MUL
 	    case 0xB6:
 	    {
 		cycles = bmove();
@@ -1169,6 +1174,34 @@ namespace botnami
 		cycles = 2;
 	    }
 	    break; // CLRD
+	    case 0xC6:
+	    {
+		setRegD(inc_internal16(getRegD()));
+		cycles = 2;
+	    }
+	    break; // INCD
+	    case 0xC7:
+	    {
+		int index_cycles = indexed_mode();
+		uint16_t operand = readWord(extended_address);
+		writeWord(extended_address, inc_internal16(operand));
+		cycles = (6 + index_cycles);
+	    }
+	    break; // INC16 indexed
+	    case 0xC8:
+	    {
+		setRegD(dec_internal16(getRegD()));
+		cycles = 2;
+	    }
+	    break; // DECD
+	    case 0xC9:
+	    {
+		int index_cycles = indexed_mode();
+		uint16_t operand = readWord(extended_address);
+		writeWord(extended_address, dec_internal16(operand));
+		cycles = (6 + index_cycles);
+	    }
+	    break; // DEC16 indexed
 	    default: unrecognizedinstr(instr); break;
 	}
 
@@ -2021,8 +2054,25 @@ namespace botnami
 	    case 0xAE: stream << "nop"; break;
 	    case 0xB0: stream << "abx"; break;
 	    case 0xB2: stream << "sex"; break;
+	    case 0xB3: stream << "mul"; break;
 	    case 0xB6: stream << "bmove"; break;
 	    case 0xC2: stream << "clrd"; break;
+	    case 0xC6: stream << "incd"; break;
+	    case 0xC7:
+	    {
+		pc += 1;
+		stream << "inc16 ";
+		indexed_mode_dasm(stream, arg, pc);
+	    }
+	    break;
+	    case 0xC8: stream << "decd"; break;
+	    case 0xC9:
+	    {
+		pc += 1;
+		stream << "dec16 ";
+		indexed_mode_dasm(stream, arg, pc);
+	    }
+	    break;
 	    default: stream << "unk"; break;
 	}
 

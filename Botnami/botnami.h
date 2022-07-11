@@ -450,12 +450,30 @@ namespace botnami
 		return uint8_t(result);
 	    }
 
+	    uint16_t inc_internal16(uint16_t data)
+	    {
+		uint32_t result = (data + 1);
+		set_nz<uint16_t>(result);
+		set_v<uint16_t>(data, 1, result);
+		set_c<uint16_t>(result);
+		return uint16_t(result);
+	    }
+
 	    uint8_t dec_internal8(uint8_t data)
 	    {
 		uint16_t result = (data - 1);
 		set_nz<uint8_t>(result);
 		set_v<uint8_t>(data, 1, result);
 		return uint8_t(result);
+	    }
+
+	    uint16_t dec_internal16(uint16_t data)
+	    {
+		uint32_t result = (data - 1);
+		set_nz<uint16_t>(result);
+		set_v<uint16_t>(data, 1, result);
+		set_c<uint16_t>(result);
+		return uint16_t(result);
 	    }
 
 	    uint8_t com_internal8(uint8_t data)
@@ -1232,6 +1250,17 @@ namespace botnami
 		auto reg = read_exg_reg(r1);
 		write_exg_reg(r2, reg);
 		return 5;
+	    }
+
+	    int mul()
+	    {
+		uint16_t result = (uint16_t(rega) * uint16_t(regb));
+
+		set_z<uint16_t>(result);
+		setRegD(result);
+		set_carry(testbit(result, 7));
+
+		return 11;
 	    }
 	    
     };
