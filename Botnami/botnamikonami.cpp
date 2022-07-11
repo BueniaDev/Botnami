@@ -1076,7 +1076,7 @@ namespace botnami
 	    break; // TSTA
 	    case 0x91:
 	    {
-		tst8(rega);
+		tst8(regb);
 		cycles = 4;
 	    }
 	    break; // TSTB
