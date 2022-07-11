@@ -995,6 +995,14 @@ namespace botnami
 		cycles = 2;
 	    }
 	    break; // COMB
+	    case 0x85:
+	    {
+		int index_cycles = indexed_mode();
+		uint8_t operand = readByte(extended_address);
+		writeByte(extended_address, com8(operand));
+		cycles = (4 + index_cycles);
+	    }
+	    break; // INC indexed
 	    case 0x86:
 	    {
 		rega = neg8(rega);
@@ -1007,6 +1015,14 @@ namespace botnami
 		cycles = 2;
 	    }
 	    break; // NEGB
+	    case 0x88:
+	    {
+		int index_cycles = indexed_mode();
+		uint8_t operand = readByte(extended_address);
+		writeByte(extended_address, neg8(operand));
+		cycles = (4 + index_cycles);
+	    }
+	    break; // INC indexed
 	    case 0x89:
 	    {
 		rega = inc_internal8(rega);
@@ -1084,6 +1100,34 @@ namespace botnami
 		cycles = 2;
 	    }
 	    break; // LSRB
+	    case 0x95:
+	    {
+		int index_cycles = indexed_mode();
+		uint8_t operand = readByte(extended_address);
+		writeByte(extended_address, lsr8(operand));
+		cycles = (4 + index_cycles);
+	    }
+	    break; // LSR indexed
+	    case 0x96:
+	    {
+		rega = ror8(rega);
+		cycles = 2;
+	    }
+	    break; // RORA
+	    case 0x97:
+	    {
+		regb = ror8(regb);
+		cycles = 2;
+	    }
+	    break; // RORB
+	    case 0x98:
+	    {
+		int index_cycles = indexed_mode();
+		uint8_t operand = readByte(extended_address);
+		writeByte(extended_address, ror8(operand));
+		cycles = (4 + index_cycles);
+	    }
+	    break; // ROR indexed
 	    case 0x99:
 	    {
 		rega = asr8(rega);
@@ -1096,6 +1140,14 @@ namespace botnami
 		cycles = 2;
 	    }
 	    break; // ASRB
+	    case 0x9B:
+	    {
+		int index_cycles = indexed_mode();
+		uint8_t operand = readByte(extended_address);
+		writeByte(extended_address, asr8(operand));
+		cycles = (4 + index_cycles);
+	    }
+	    break; // ASR indexed
 	    case 0x9C:
 	    {
 		rega = asl8(rega);
@@ -1108,6 +1160,14 @@ namespace botnami
 		cycles = 2;
 	    }
 	    break; // ASLB
+	    case 0x9E:
+	    {
+		int index_cycles = indexed_mode();
+		uint8_t operand = readByte(extended_address);
+		writeByte(extended_address, asl8(operand));
+		cycles = (4 + index_cycles);
+	    }
+	    break; // ASL indexed
 	    case 0x9F:
 	    {
 		cycles = rti();
@@ -2014,8 +2074,22 @@ namespace botnami
 	    break;
 	    case 0x83: stream << "coma"; break;
 	    case 0x84: stream << "comb"; break;
+	    case 0x85:
+	    {
+		pc += 1;
+		stream << "com ";
+		indexed_mode_dasm(stream, arg, pc);
+	    }
+	    break;
 	    case 0x86: stream << "nega"; break;
 	    case 0x87: stream << "negb"; break;
+	    case 0x88:
+	    {
+		pc += 1;
+		stream << "neg ";
+		indexed_mode_dasm(stream, arg, pc);
+	    }
+	    break;
 	    case 0x89: stream << "inca"; break;
 	    case 0x8A: stream << "incb"; break;
 	    case 0x8B:
@@ -2046,10 +2120,40 @@ namespace botnami
 	    break;
 	    case 0x93: stream << "lsra"; break;
 	    case 0x94: stream << "lsrb"; break;
+	    case 0x95:
+	    {
+		pc += 1;
+		stream << "lsr ";
+		indexed_mode_dasm(stream, arg, pc);
+	    }
+	    break;
+	    case 0x96: stream << "rora"; break;
+	    case 0x97: stream << "rorb"; break;
+	    case 0x98:
+	    {
+		pc += 1;
+		stream << "ror ";
+		indexed_mode_dasm(stream, arg, pc);
+	    }
+	    break;
 	    case 0x99: stream << "asra"; break;
 	    case 0x9A: stream << "asrb"; break;
+	    case 0x9B:
+	    {
+		pc += 1;
+		stream << "asr ";
+		indexed_mode_dasm(stream, arg, pc);
+	    }
+	    break;
 	    case 0x9C: stream << "asla"; break;
 	    case 0x9D: stream << "aslb"; break;
+	    case 0x9E:
+	    {
+		pc += 1;
+		stream << "asl ";
+		indexed_mode_dasm(stream, arg, pc);
+	    }
+	    break;
 	    case 0x9F: stream << "rti"; break;
 	    case 0xA0: stream << "rola"; break;
 	    case 0xA1: stream << "rolb"; break;

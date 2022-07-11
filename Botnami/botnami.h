@@ -442,6 +442,15 @@ namespace botnami
 		return result;
 	    }
 
+	    uint8_t ror_internal8(uint8_t source)
+	    {
+		bool new_carry = testbit(source, 0);
+		uint8_t result = ((source >> 1) | (is_carry() << 7));
+		set_nz<uint8_t>(result);
+		set_carry(new_carry);
+		return result;
+	    }
+
 	    uint8_t inc_internal8(uint8_t data)
 	    {
 		uint16_t result = (data + 1);
@@ -615,6 +624,11 @@ namespace botnami
 	    uint8_t rol8(uint8_t source)
 	    {
 		return rol_internal8(source);
+	    }
+
+	    uint8_t ror8(uint8_t source)
+	    {
+		return ror_internal8(source);
 	    }
 
 	    uint8_t com8(uint8_t source)
