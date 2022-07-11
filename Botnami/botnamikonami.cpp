@@ -995,6 +995,18 @@ namespace botnami
 		cycles = 2;
 	    }
 	    break; // COMB
+	    case 0x86:
+	    {
+		rega = neg8(rega);
+		cycles = 2;
+	    }
+	    break; // NEGA
+	    case 0x87:
+	    {
+		regb = neg8(regb);
+		cycles = 2;
+	    }
+	    break; // NEGB
 	    case 0x89:
 	    {
 		rega = inc_internal8(rega);
@@ -1209,6 +1221,16 @@ namespace botnami
 		cycles = (6 + index_cycles);
 	    }
 	    break; // DEC16 indexed
+	    case 0xCF:
+	    {
+		cycles = bset();
+	    }
+	    break; // BSET
+	    case 0xD0:
+	    {
+		cycles = bset2();
+	    }
+	    break; // BSET2
 	    default: unrecognizedinstr(instr); break;
 	}
 
@@ -1992,6 +2014,8 @@ namespace botnami
 	    break;
 	    case 0x83: stream << "coma"; break;
 	    case 0x84: stream << "comb"; break;
+	    case 0x86: stream << "nega"; break;
+	    case 0x87: stream << "negb"; break;
 	    case 0x89: stream << "inca"; break;
 	    case 0x8A: stream << "incb"; break;
 	    case 0x8B:
@@ -2087,6 +2111,8 @@ namespace botnami
 		indexed_mode_dasm(stream, arg, pc);
 	    }
 	    break;
+	    case 0xCF: stream << "bset"; break;
+	    case 0xD0: stream << "bset2"; break;
 	    default: stream << "unk"; break;
 	}
 

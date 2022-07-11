@@ -349,3 +349,68 @@ TEST(AsrATest, "Botnami.Konami2.Shift")
 
     test.shutdown();
 }
+
+
+TEST(NegTest, "Botnami.Konami2.Arithmetic")
+{
+    BotnamiKonami2Test test;
+
+    vector<uint8_t> code;
+
+    for (int i = 0; i < 256; i++)
+    {
+	code.push_back(0x10);
+	code.push_back((i & 0xFF));
+	code.push_back(0x86);
+    }
+
+    test.init(code, 0x1000);
+
+    for (int i = 0; i < 256; i++)
+    {
+	test.run(2);
+	auto status = test.getCore().getStatus();
+
+	uint8_t expected_value = -i;
+
+	botassert::eq(expected_value, status.rega);
+
+	if (expected_value == 0)
+	{
+	    botassert::is_true(test.getCore().is_zero());
+	}
+	else
+	{
+	    botassert::is_false(test.getCore().is_zero());
+	}
+
+	if ((i >= 1) && (i <= 128))
+	{
+	    botassert::is_true(test.getCore().is_sign());
+	}
+	else
+	{
+	    botassert::is_false(test.getCore().is_sign());
+	}
+
+	if (expected_value == 128)
+	{
+	    botassert::is_true(test.getCore().is_overflow());
+	}
+	else
+	{
+	    botassert::is_false(test.getCore().is_overflow());
+	}
+
+	if (expected_value >= 1)
+	{
+	    botassert::is_true(test.getCore().is_carry());
+	}
+	else
+	{
+	    botassert::is_false(test.getCore().is_carry());
+	}
+    }
+
+    test.shutdown();
+}

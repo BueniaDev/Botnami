@@ -485,6 +485,15 @@ namespace botnami
 		return result;
 	    }
 
+	    uint8_t neg_internal8(uint8_t data)
+	    {
+		uint8_t result = -data;
+		set_nz<uint8_t>(result);
+		set_overflow(data == 0x80);
+		set_carry(data != 0x00);
+		return result;
+	    }
+
 	    uint8_t load8(uint8_t data)
 	    {
 		set_overflow(false);
@@ -611,6 +620,11 @@ namespace botnami
 	    uint8_t com8(uint8_t source)
 	    {
 		return com_internal8(source);
+	    }
+
+	    uint8_t neg8(uint8_t source)
+	    {
+		return neg_internal8(source);
 	    }
 
 	    int pushs()
@@ -1261,6 +1275,35 @@ namespace botnami
 		set_carry(testbit(result, 7));
 
 		return 11;
+	    }
+
+	    int bset()
+	    {
+		int cycles = 1;
+
+		while (usp > 0)
+		{
+		    writeByte(regx++, rega);
+		    usp -= 1;
+		    cycles += 2;
+		}
+
+		return cycles;
+	    }
+
+	    int bset2()
+	    {
+		int cycles = 1;
+
+		while (usp > 0)
+		{
+		    writeByte(regx++, rega);
+		    writeByte(regx++, regb);
+		    usp -= 1;
+		    cycles += 3;
+		}
+
+		return cycles;
 	    }
 	    
     };
