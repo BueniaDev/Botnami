@@ -1174,6 +1174,13 @@ namespace botnami
 		cycles = 2;
 	    }
 	    break; // CLRD
+	    case 0xC3:
+	    {
+		int index_cycles = indexed_mode();
+		writeWord(extended_address, clear<uint16_t>());
+		cycles = (4 + index_cycles);
+	    }
+	    break; // CLR16 indexed
 	    case 0xC6:
 	    {
 		setRegD(inc_internal16(getRegD()));
@@ -2057,6 +2064,13 @@ namespace botnami
 	    case 0xB3: stream << "mul"; break;
 	    case 0xB6: stream << "bmove"; break;
 	    case 0xC2: stream << "clrd"; break;
+	    case 0xC3:
+	    {
+		pc += 1;
+		stream << "clr16 ";
+		indexed_mode_dasm(stream, arg, pc);
+	    }
+	    break;
 	    case 0xC6: stream << "incd"; break;
 	    case 0xC7:
 	    {
