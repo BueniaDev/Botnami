@@ -432,6 +432,14 @@ namespace botnami
 		return result;
 	    }
 
+	    uint16_t lsr_internal16(uint16_t source)
+	    {
+		set_carry(testbit(source, 0));
+		uint16_t result = (source >> 1);
+		set_nz<uint16_t>(result);
+		return result;
+	    }
+
 	    uint8_t rol_internal8(uint8_t source)
 	    {
 		bool new_carry = testbit(source, 7);
@@ -683,6 +691,11 @@ namespace botnami
 	    uint16_t neg16(uint16_t source)
 	    {
 		return neg_internal16(source);
+	    }
+
+	    uint16_t lsr16(uint16_t source)
+	    {
+		return lsr_internal16(source);
 	    }
 
 	    int pushs()
@@ -1364,6 +1377,48 @@ namespace botnami
 		return cycles;
 	    }
 	    
+
+	    template<typename T>
+	    T safe_shift_left(T value, uint32_t shift)
+	    {
+		T result = 0;
+
+		if (shift < (sizeof(T) * 8))
+		{
+		    result = (value << shift);
+		}
+
+		return result;
+	    }
+
+	    template<typename T>
+	    T safe_shift_right_unsigned(T value, uint32_t shift)
+	    {
+		T result = 0;
+
+		if (shift < (sizeof(T) * 8))
+		{
+		    result = (value >> shift);
+		}
+
+		return result;
+	    }
+
+	    int lsrd(uint8_t shift)
+	    {
+		if (shift != 0)
+		{
+		    auto mask = (getRegD() & safe_shift_left(1, shift));
+		    set_carry((mask != 0));
+
+		    auto result = safe_shift_right_unsigned<uint16_t>(getRegD(), shift);
+
+		    set_nz<uint16_t>(result);
+		    setRegD(result);
+		}
+
+		return 3;
+	    }
     };
 };
 

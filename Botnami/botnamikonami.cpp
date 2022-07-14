@@ -1185,6 +1185,14 @@ namespace botnami
 		cycles = 2;
 	    }
 	    break; // ROLB
+	    case 0xA6:
+	    {
+		int index_cycles = indexed_mode();
+		uint16_t operand = readWord(extended_address);
+		writeWord(extended_address, lsr16(operand));
+		cycles = (5 + index_cycles);
+	    }
+	    break; // LSR16 indexed
 	    case 0xA8:
 	    {
 		int index_cycles = indexed_mode();
@@ -1240,6 +1248,12 @@ namespace botnami
 		cycles = bmove();
 	    }
 	    break; // BMOVE
+	    case 0xB8:
+	    {
+		uint8_t shift = getimmByte();
+		cycles = lsrd(shift);
+	    }
+	    break; // LSRD imm
 	    case 0xC2:
 	    {
 		setRegD(clear<uint16_t>());
@@ -2189,6 +2203,13 @@ namespace botnami
 	    case 0x9F: stream << "rti"; break;
 	    case 0xA0: stream << "rola"; break;
 	    case 0xA1: stream << "rolb"; break;
+	    case 0xA6:
+	    {
+		pc += 1;
+		stream << "lsr16 ";
+		indexed_mode_dasm(stream, arg, pc);
+	    }
+	    break;
 	    case 0xA8:
 	    {
 		pc += 1;
@@ -2223,6 +2244,12 @@ namespace botnami
 	    case 0xB2: stream << "sex"; break;
 	    case 0xB3: stream << "mul"; break;
 	    case 0xB6: stream << "bmove"; break;
+	    case 0xB8:
+	    {
+		pc += 1;
+		stream << "lsrd #$" << hex << int(arg);
+	    }
+	    break;
 	    case 0xC2: stream << "clrd"; break;
 	    case 0xC3:
 	    {
