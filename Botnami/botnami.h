@@ -415,6 +415,15 @@ namespace botnami
 		return result;
 	    }
 
+	    uint16_t asl_internal16(uint16_t source)
+	    {
+		set_carry(testbit(source, 15));
+		uint16_t result = (source << 1);
+		set_nz<uint16_t>(result);
+		set_overflow(testbit((source ^ result), 15));
+		return result;
+	    }
+
 	    uint8_t asr_internal8(uint8_t source)
 	    {
 		set_carry(testbit(source, 0));
@@ -658,6 +667,11 @@ namespace botnami
 		return asl_internal8(source);
 	    }
 
+	    uint16_t asl16(uint16_t source)
+	    {
+		return asl_internal16(source);
+	    }
+
 	    uint8_t asr8(uint8_t source)
 	    {
 		return asr_internal8(source);
@@ -666,6 +680,11 @@ namespace botnami
 	    uint8_t lsr8(uint8_t source)
 	    {
 		return lsr_internal8(source);
+	    }
+
+	    uint16_t lsr16(uint16_t source)
+	    {
+		return lsr_internal16(source);
 	    }
 
 	    uint8_t rol8(uint8_t source)
@@ -691,11 +710,6 @@ namespace botnami
 	    uint16_t neg16(uint16_t source)
 	    {
 		return neg_internal16(source);
-	    }
-
-	    uint16_t lsr16(uint16_t source)
-	    {
-		return lsr_internal16(source);
 	    }
 
 	    int pushs()
@@ -809,6 +823,38 @@ namespace botnami
 		}
 
 		return cycles;
+	    }
+
+	    int daa()
+	    {
+		uint16_t value = 0;
+		uint16_t cf = 0;
+
+		uint8_t msn = (rega & 0xF0);
+		uint8_t lsn = (rega & 0xF);
+	
+		if ((lsn > 0x09) || is_half())
+		{
+		    cf |= 0x06;
+		}
+
+		if ((msn > 0x80) && (lsn > 0x09))
+		{
+		    cf |= 0x60;
+		}
+
+		if ((msn > 0x90) || is_carry())
+		{
+		    cf |= 0x60;
+		}
+
+		value = (rega + cf);
+
+		set_overflow(false);
+		set_carry(testbit(value, 8));
+		set_nz<uint8_t>(value);
+		rega = uint8_t(value);
+		return 2;
 	    }
 
 	    void pushsp(uint8_t val)
