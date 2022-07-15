@@ -23,7 +23,6 @@ using namespace std;
 // KONAMI-2 opcode logic
 //
 // TODO list:
-// Implement remaining instructions
 // Add FIRQ and NMI support
 
 namespace botnami
@@ -1336,6 +1335,58 @@ namespace botnami
 		cycles = (lsrd(shift) + index_cycles);
 	    }
 	    break; // LSRD indexed
+	    case 0xBA:
+	    {
+		uint8_t shift = getimmByte();
+		cycles = rord(shift);
+	    }
+	    break; // RORD imm
+	    case 0xBB:
+	    {
+		int index_cycles = indexed_mode();
+		uint8_t shift = readByte(extended_address);
+		cycles = (rord(shift) + index_cycles);
+	    }
+	    break; // RORD indexed
+	    case 0xBC:
+	    {
+		uint8_t shift = getimmByte();
+		cycles = asrd(shift);
+	    }
+	    break; // ASRD imm
+	    case 0xBD:
+	    {
+		int index_cycles = indexed_mode();
+		uint8_t shift = readByte(extended_address);
+		cycles = (asrd(shift) + index_cycles);
+	    }
+	    break; // ASRD indexed
+	    case 0xBE:
+	    {
+		uint8_t shift = getimmByte();
+		cycles = asld(shift);
+	    }
+	    break; // ASLD imm
+	    case 0xBF:
+	    {
+		int index_cycles = indexed_mode();
+		uint8_t shift = readByte(extended_address);
+		cycles = (asld(shift) + index_cycles);
+	    }
+	    break; // ASLD indexed
+	    case 0xC0:
+	    {
+		uint8_t shift = getimmByte();
+		cycles = rold(shift);
+	    }
+	    break; // ROLD imm
+	    case 0xC1:
+	    {
+		int index_cycles = indexed_mode();
+		uint8_t shift = readByte(extended_address);
+		cycles = (rold(shift) + index_cycles);
+	    }
+	    break; // ROLD indexed
 	    case 0xC2:
 	    {
 		setRegD(clear<uint16_t>());
@@ -2406,6 +2457,58 @@ namespace botnami
 	    {
 		pc += 1;
 		stream << "lsrd ";
+		indexed_mode_dasm(stream, arg, pc);
+	    }
+	    break;
+	    case 0xBA:
+	    {
+		pc += 1;
+		stream << "rord #$" << hex << int(arg);
+	    }
+	    break;
+	    case 0xBB:
+	    {
+		pc += 1;
+		stream << "rord ";
+		indexed_mode_dasm(stream, arg, pc);
+	    }
+	    break;
+	    case 0xBC:
+	    {
+		pc += 1;
+		stream << "asrd #$" << hex << int(arg);
+	    }
+	    break;
+	    case 0xBD:
+	    {
+		pc += 1;
+		stream << "asrd ";
+		indexed_mode_dasm(stream, arg, pc);
+	    }
+	    break;
+	    case 0xBE:
+	    {
+		pc += 1;
+		stream << "asld #$" << hex << int(arg);
+	    }
+	    break;
+	    case 0xBF:
+	    {
+		pc += 1;
+		stream << "asld ";
+		indexed_mode_dasm(stream, arg, pc);
+	    }
+	    break;
+	    case 0xC0:
+	    {
+		pc += 1;
+		stream << "rold #$" << hex << int(arg);
+	    }
+	    break;
+	    case 0xC1:
+	    {
+		pc += 1;
+		stream << "rold ";
 		indexed_mode_dasm(stream, arg, pc);
 	    }
 	    break;

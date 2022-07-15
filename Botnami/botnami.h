@@ -1686,45 +1686,57 @@ namespace botnami
 
 		return cycles;
 	    }
-	    
-
-	    template<typename T>
-	    T safe_shift_left(T value, uint32_t shift)
-	    {
-		T result = 0;
-
-		if (shift < (sizeof(T) * 8))
-		{
-		    result = (value << shift);
-		}
-
-		return result;
-	    }
-
-	    template<typename T>
-	    T safe_shift_right_unsigned(T value, uint32_t shift)
-	    {
-		T result = 0;
-
-		if (shift < (sizeof(T) * 8))
-		{
-		    result = (value >> shift);
-		}
-
-		return result;
-	    }
 
 	    int lsrd(uint8_t shift)
 	    {
-		if (shift != 0)
+		while (shift > 0)
 		{
-		    auto mask = (getRegD() & safe_shift_left(1, shift));
-		    set_carry((mask != 0));
+		    setRegD(lsr16(getRegD()));
+		    shift -= 1;
+		}
 
-		    auto result = safe_shift_right_unsigned<uint16_t>(getRegD(), shift);
+		return 3;
+	    }
 
-		    set_nz<uint16_t>(result);
-		    setRegD(result);
+	    int asld(uint8_t shift)
+	    {
+		while (shift > 0)
+		{
+		    setRegD(asl16(getRegD()));
+		    shift -= 1;
+		}
+
+		return 3;
+	    }
+
+	    int asrd(uint8_t shift)
+	    {
+		while (shift > 0)
+		{
+		    setRegD(asr16(getRegD()));
+		    shift -= 1;
+		}
+
+		return 3;
+	    }
+
+	    int rold(uint8_t shift)
+	    {
+		while (shift > 0)
+		{
+		    setRegD(rol16(getRegD()));
+		    shift -= 1;
+		}
+
+		return 3;
+	    }
+
+	    int rord(uint8_t shift)
+	    {
+		while (shift > 0)
+		{
+		    setRegD(ror16(getRegD()));
+		    shift -= 1;
 		}
 
 		return 3;
