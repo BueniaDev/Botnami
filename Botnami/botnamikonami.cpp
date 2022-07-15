@@ -226,11 +226,21 @@ namespace botnami
 		cycles = pushs();
 	    }
 	    break; // PUSHS
+	    case 0x0D:
+	    {
+		cycles = pushu();
+	    }
+	    break; // PUSHU
 	    case 0x0E:
 	    {
 		cycles = pulls();
 	    }
 	    break; // PULLS
+	    case 0x0F:
+	    {
+		cycles = pullu();
+	    }
+	    break; // PULLU
 	    case 0x10:
 	    {
 		uint8_t operand = getimmByte();
@@ -1201,6 +1211,22 @@ namespace botnami
 		cycles = (5 + index_cycles);
 	    }
 	    break; // LSR16 indexed
+	    case 0xA4:
+	    {
+		int index_cycles = indexed_mode();
+		uint16_t operand = readWord(extended_address);
+		writeWord(extended_address, rol16(operand));
+		cycles = (5 + index_cycles);
+	    }
+	    break; // ROL16 indexed
+	    case 0xA5:
+	    {
+		int index_cycles = indexed_mode();
+		uint16_t operand = readWord(extended_address);
+		writeWord(extended_address, asr16(operand));
+		cycles = (5 + index_cycles);
+	    }
+	    break; // ASR16 indexed
 	    case 0xA6:
 	    {
 		int index_cycles = indexed_mode();
@@ -1277,11 +1303,26 @@ namespace botnami
 		cycles = mul();
 	    }
 	    break; // MUL
+	    case 0xB4:
+	    {
+		cycles = lmul();
+	    }
+	    break; // LMUL
+	    case 0xB5:
+	    {
+		cycles = divx();
+	    }
+	    break; // DIVX
 	    case 0xB6:
 	    {
 		cycles = bmove();
 	    }
 	    break; // BMOVE
+	    case 0xB7:
+	    {
+		cycles = move();
+	    }
+	    break; // MOVE
 	    case 0xB8:
 	    {
 		uint8_t shift = getimmByte();
@@ -1350,6 +1391,20 @@ namespace botnami
 		cycles = (6 + index_cycles);
 	    }
 	    break; // DEC16 indexed
+	    case 0xCA:
+	    {
+		tst16(getRegD());
+		cycles = 2;
+	    }
+	    break; // TSTD
+	    case 0xCB:
+	    {
+		int index_cycles = indexed_mode();
+		uint16_t operand = readWord(extended_address);
+		tst16(operand);
+		cycles = (4 + index_cycles);
+	    }
+	    break; // TST16 indexed
 	    case 0xCC:
 	    {
 		rega = abs8(rega);
@@ -1482,10 +1537,22 @@ namespace botnami
 		stream << "pushs";
 	    }
 	    break;
+	    case 0x0D:
+	    {
+		pc += 1;
+		stream << "pushu";
+	    }
+	    break;
 	    case 0x0E:
 	    {
 		pc += 1;
 		stream << "pulls";
+	    }
+	    break;
+	    case 0x0F:
+	    {
+		pc += 1;
+		stream << "pullu";
 	    }
 	    break;
 	    case 0x10:
@@ -2258,6 +2325,20 @@ namespace botnami
 		indexed_mode_dasm(stream, arg, pc);
 	    }
 	    break;
+	    case 0xA4:
+	    {
+		pc += 1;
+		stream << "ror16 ";
+		indexed_mode_dasm(stream, arg, pc);
+	    }
+	    break;
+	    case 0xA5:
+	    {
+		pc += 1;
+		stream << "asr16 ";
+		indexed_mode_dasm(stream, arg, pc);
+	    }
+	    break;
 	    case 0xA6:
 	    {
 		pc += 1;
@@ -2311,7 +2392,10 @@ namespace botnami
 	    case 0xB1: stream << "daa"; break;
 	    case 0xB2: stream << "sex"; break;
 	    case 0xB3: stream << "mul"; break;
+	    case 0xB4: stream << "lmul"; break;
+	    case 0xB5: stream << "divx"; break;
 	    case 0xB6: stream << "bmove"; break;
+	    case 0xB7: stream << "move"; break;
 	    case 0xB8:
 	    {
 		pc += 1;
@@ -2354,6 +2438,14 @@ namespace botnami
 	    {
 		pc += 1;
 		stream << "dec16 ";
+		indexed_mode_dasm(stream, arg, pc);
+	    }
+	    break;
+	    case 0xCA: stream << "tstd"; break;
+	    case 0xCB:
+	    {
+		pc += 1;
+		stream << "tst16 ";
 		indexed_mode_dasm(stream, arg, pc);
 	    }
 	    break;

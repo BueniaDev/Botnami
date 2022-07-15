@@ -433,6 +433,15 @@ namespace botnami
 		return result;
 	    }
 
+	    uint16_t asr_internal16(uint16_t source)
+	    {
+		set_carry(testbit(source, 0));
+		bool bit15 = testbit(source, 15);
+		uint16_t result = ((source >> 1) | (bit15 << 15));
+		set_nz<uint16_t>(result);
+		return result;
+	    }
+
 	    uint8_t lsr_internal8(uint8_t source)
 	    {
 		set_carry(testbit(source, 0));
@@ -481,7 +490,7 @@ namespace botnami
 	    uint16_t ror_internal16(uint16_t source)
 	    {
 		bool new_carry = testbit(source, 0);
-		uint16_t result = ((source >> 1) | (is_carry() << 7));
+		uint16_t result = ((source >> 1) | (is_carry() << 15));
 		set_nz<uint16_t>(result);
 		set_carry(new_carry);
 		return result;
@@ -607,6 +616,11 @@ namespace botnami
 		return data;
 	    }
 
+	    void tst16(uint16_t data)
+	    {
+		load16(data);
+	    }
+
 	    void store8(uint16_t addr, uint8_t data)
 	    {
 		set_overflow(false);
@@ -716,6 +730,11 @@ namespace botnami
 		return asr_internal8(source);
 	    }
 
+	    uint16_t asr16(uint16_t source)
+	    {
+		return asr_internal16(source);
+	    }
+
 	    uint8_t lsr8(uint8_t source)
 	    {
 		return lsr_internal8(source);
@@ -739,6 +758,11 @@ namespace botnami
 	    uint8_t ror8(uint8_t source)
 	    {
 		return ror_internal8(source);
+	    }
+
+	    uint16_t ror16(uint16_t source)
+	    {
+		return ror_internal16(source);
 	    }
 
 	    uint8_t clr8()
@@ -879,6 +903,119 @@ namespace botnami
 		return cycles;
 	    }
 
+	    int pushu()
+	    {
+		uint8_t stack_reg = getimmByte();
+
+		int cycles = 5;
+
+		if (testbit(stack_reg, 7))
+		{
+		    pushusp16(pc);
+		    cycles += 2;
+		}
+
+		if (testbit(stack_reg, 6))
+		{
+		    pushusp16(ssp);
+		    cycles += 2;
+		}
+
+		if (testbit(stack_reg, 5))
+		{
+		    pushusp16(regy);
+		    cycles += 2;
+		}
+
+		if (testbit(stack_reg, 4))
+		{
+		    pushusp16(regx);
+		    cycles += 2;
+		}
+
+		if (testbit(stack_reg, 3))
+		{
+		    pushusp(regdp);
+		    cycles += 1;
+		}
+
+		if (testbit(stack_reg, 2))
+		{
+		    pushusp(regb);
+		    cycles += 1;
+		}
+
+		if (testbit(stack_reg, 1))
+		{
+		    pushusp(rega);
+		    cycles += 1;
+		}
+
+		if (testbit(stack_reg, 0))
+		{
+		    pushusp(status_reg);
+		    cycles += 1;
+		}
+
+		return cycles;
+	    }
+
+	    int pullu()
+	    {
+		uint8_t stack_reg = getimmByte();
+		int cycles = 5;
+
+		if (testbit(stack_reg, 0))
+		{
+		    status_reg = pullusp();
+		    cycles += 1;
+		}
+
+		if (testbit(stack_reg, 1))
+		{
+		    rega = pullusp();
+		    cycles += 1;
+		}
+
+		if (testbit(stack_reg, 2))
+		{
+		    regb = pullusp();
+		    cycles += 1;
+		}
+
+		if (testbit(stack_reg, 3))
+		{
+		    regdp = pullusp();
+		    cycles += 1;
+		}
+
+		if (testbit(stack_reg, 4))
+		{
+		    regx = pullusp16();
+		    cycles += 2;
+		}
+
+		if (testbit(stack_reg, 5))
+		{
+		    regy = pullusp16();
+		    cycles += 2;
+		}
+
+		if (testbit(stack_reg, 6))
+		{
+		    ssp = pullusp16();
+		    cycles += 2;
+		}
+
+		if (testbit(stack_reg, 7))
+		{
+		    pc = pullusp16();
+		    cycles += 2;
+		}
+
+		return cycles;
+	    }
+
 	    int daa()
 	    {
 		uint16_t value = 0;
@@ -934,6 +1071,32 @@ namespace botnami
 	    {
 		uint8_t high = pullsp();
 		uint8_t low = pullsp();
+		return ((high << 8) | low);
+	    }
+
+	    void pushusp(uint8_t val)
+	    {
+		usp -= 1;
+		writeByte(usp, val);
+	    }
+
+	    uint8_t pullusp()
+	    {
+		uint8_t value = readByte(usp);
+		usp += 1;
+		return value;
+	    }
+
+	    void pushusp16(uint16_t val)
+	    {
+		pushusp((val & 0xFF));
+		pushusp((val >> 8));
+	    }
+
+	    uint16_t pullusp16()
+	    {
+		uint8_t high = pullusp();
+		uint8_t low = pullusp();
 		return ((high << 8) | low);
 	    }
 
@@ -1453,6 +1616,46 @@ namespace botnami
 		set_carry(testbit(result, 7));
 
 		return 11;
+	    }
+
+	    int lmul()
+	    {
+		uint32_t result = (uint32_t(regx) * uint32_t(regy));
+
+		regx = (result >> 16);
+		regy = (result & 0xFFFF);
+
+		set_z<uint16_t>(result);
+		set_carry(testbit(result, 15));
+		return 22;
+	    }
+
+	    int divx()
+	    {
+		uint16_t result = 0;
+		uint8_t remainder = 0;
+
+		if (regb != 0)
+		{
+		    result = (regx / regb);
+		    remainder = (regx % regb);
+		}
+
+		regx = result;
+		regb = remainder;
+
+		set_z<uint16_t>(result);
+
+		set_carry(testbit(result, 7));
+		return 11;
+	    }
+
+	    int move()
+	    {
+		uint8_t temp = readByte(regy++);
+		writeByte(regx++, temp);
+		usp -= 1;
+		return 2;
 	    }
 
 	    int bset()
