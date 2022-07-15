@@ -459,11 +459,30 @@ namespace botnami
 		return result;
 	    }
 
+	    uint16_t rol_internal16(uint16_t source)
+	    {
+		bool new_carry = testbit(source, 15);
+		uint16_t result = ((source << 1) | is_carry());
+		set_nz<uint16_t>(result);
+		set_overflow(testbit((source ^ result), 15));
+		set_carry(new_carry);
+		return result;
+	    }
+
 	    uint8_t ror_internal8(uint8_t source)
 	    {
 		bool new_carry = testbit(source, 0);
 		uint8_t result = ((source >> 1) | (is_carry() << 7));
 		set_nz<uint8_t>(result);
+		set_carry(new_carry);
+		return result;
+	    }
+
+	    uint16_t ror_internal16(uint16_t source)
+	    {
+		bool new_carry = testbit(source, 0);
+		uint16_t result = ((source >> 1) | (is_carry() << 7));
+		set_nz<uint16_t>(result);
 		set_carry(new_carry);
 		return result;
 	    }
@@ -642,6 +661,26 @@ namespace botnami
 		sub_internal16(source, operand);
 	    }
 
+	    uint8_t inc8(uint8_t source)
+	    {
+		return inc_internal8(source);
+	    }
+
+	    uint16_t inc16(uint16_t source)
+	    {
+		return inc_internal16(source);
+	    }
+
+	    uint8_t dec8(uint8_t source)
+	    {
+		return dec_internal8(source);
+	    }
+
+	    uint16_t dec16(uint16_t source)
+	    {
+		return dec_internal16(source);
+	    }
+
 	    uint8_t and8(uint8_t source, uint8_t operand)
 	    {
 		return and_internal8(source, operand);
@@ -692,9 +731,24 @@ namespace botnami
 		return rol_internal8(source);
 	    }
 
+	    uint16_t rol16(uint16_t source)
+	    {
+		return rol_internal16(source);
+	    }
+
 	    uint8_t ror8(uint8_t source)
 	    {
 		return ror_internal8(source);
+	    }
+
+	    uint8_t clr8()
+	    {
+		return clear<uint8_t>();
+	    }
+
+	    uint16_t clr16()
+	    {
+		return clear<uint16_t>();
 	    }
 
 	    uint8_t com8(uint8_t source)
@@ -1290,6 +1344,13 @@ namespace botnami
 	    int decbjnz()
 	    {
 		regb = dec_internal8(regb);
+		branch(is_cond_ne());
+		return 4;
+	    }
+
+	    int decxjnz()
+	    {
+		regx = dec_internal16(regx);
 		branch(is_cond_ne());
 		return 4;
 	    }
