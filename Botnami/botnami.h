@@ -1165,8 +1165,15 @@ namespace botnami
     class BOTNAMI_API Botnami6800 : public BotnamiCPU
     {
 	public:
-	    Botnami6800();
-	    virtual ~Botnami6800();
+	    Botnami6800()
+	    {
+
+	    }
+
+	    virtual ~Botnami6800()
+	    {
+
+	    }
 
 	    void init()
 	    {
@@ -1206,8 +1213,15 @@ namespace botnami
     class BOTNAMI_API Botnami6809 : public BotnamiCPU
     {
 	public:
-	    Botnami6809();
-	    virtual ~Botnami6809();
+	    Botnami6809()
+	    {
+
+	    }
+
+	    virtual ~Botnami6809()
+	    {
+
+	    }
 
 	    void init()
 	    {
@@ -1275,8 +1289,15 @@ namespace botnami
     class BOTNAMI_API Botnami6309 : public BotnamiCPU
     {
 	public:
-	    Botnami6309();
-	    virtual ~Botnami6309();
+	    Botnami6309()
+	    {
+
+	    }
+
+	    virtual ~Botnami6309()
+	    {
+
+	    }
 
 	    void init()
 	    {

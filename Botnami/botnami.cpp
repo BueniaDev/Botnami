@@ -42,16 +42,6 @@ namespace botnami
 
     }
 
-    Botnami6809::Botnami6809()
-    {
-
-    }
-
-    Botnami6809::~Botnami6809()
-    {
-
-    }
-
     void BotnamiCPU::init()
     {
 	rega = 0;

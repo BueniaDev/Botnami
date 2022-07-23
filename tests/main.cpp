@@ -162,6 +162,57 @@ class BotnamiTest
 	Botnami6809 core;
 };
 
+class Botnami6309Test
+{
+    public:
+	Botnami6309Test()
+	{
+	    
+	}
+
+	~Botnami6309Test()
+	{
+
+	}
+
+	void init(vector<uint8_t> code, uint16_t start_addr = 0x4000)
+	{
+	    test = new BotnamiTestCPU(core);
+	    test->init_code(code, start_addr);
+	}
+
+	void shutdown()
+	{
+	    if (test != NULL)
+	    {
+		test->shutdown();
+		test = NULL;
+	    }
+	}
+
+	void run(int num_instrs = 1)
+	{
+	    if (test == NULL)
+	    {
+		return;
+	    }
+
+	    for (int i = 0; i < num_instrs; i++)
+	    {
+		test->run_instr();
+	    }
+	}
+
+	Botnami6309 &getCore()
+	{
+	    return core;
+	}
+
+    private:
+	BotnamiTestCPU *test = NULL;
+	Botnami6309 core;
+};
+
 class BotnamiKonami1Test
 {
     public:
