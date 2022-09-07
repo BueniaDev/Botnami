@@ -594,6 +594,13 @@ namespace botnami
 		return data;
 	    }
 
+	    uint16_t load16(uint16_t data)
+	    {
+		set_overflow(false);
+		set_nz<uint16_t>(data);
+		return data;
+	    }
+
 	    void tst8(uint8_t data)
 	    {
 		load8(data);
@@ -607,13 +614,6 @@ namespace botnami
 		set_overflow(false);
 		set_carry(false);
 		return T(0);
-	    }
-
-	    uint16_t load16(uint16_t data)
-	    {
-		set_overflow(false);
-		set_nz<uint16_t>(data);
-		return data;
 	    }
 
 	    void tst16(uint16_t data)
@@ -1274,6 +1274,10 @@ namespace botnami
 	    Botnami6809Status status;
 
 	private:
+	    uint16_t extended_address = 0;
+
+	    int indexed_mode();
+
 	    uint16_t getRegD()
 	    {
 		return ((rega << 8) | regb);
@@ -1283,6 +1287,32 @@ namespace botnami
 	    {
 		rega = (value >> 8);
 		regb = (value & 0xFF);
+	    }
+
+	    int mul()
+	    {
+		uint16_t result = (uint16_t(rega) * uint16_t(regb));
+
+		set_z<uint16_t>(result);
+		setRegD(result);
+		set_carry(testbit(result, 7));
+
+		return 11;
+	    }
+
+	    uint16_t get_ireg(uint8_t instr)
+	    {
+		uint16_t data = 0;
+		int reg_val = ((instr >> 5) & 0x3);
+		switch (reg_val)
+		{
+		    case 0: data = regx; break;
+		    case 1: data = regy; break;
+		    case 2: data = usp; break;
+		    case 3: data = ssp; break;
+		}
+
+		return data;
 	    }
     };
 

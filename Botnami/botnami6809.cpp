@@ -24,72 +24,152 @@ using namespace std;
 
 namespace botnami
 {
+    int Botnami6809::indexed_mode()
+    {
+	int cycles = 1;
+
+	uint8_t opcode = getimmByte();
+	uint16_t address = 0;
+
+	if (testbit(opcode, 7))
+	{
+	    cout << "Unimplemented indexed mode of " << hex << int(opcode & 0x7F) << endl;
+	    exit(0);
+	}
+	else
+	{
+	    address = (get_ireg(opcode) + int8_t((opcode & 0xF) | (testbit(opcode, 4) ? 0xF0 : 0x00)));
+	    cycles += 2;
+	}
+
+	extended_address = address;
+
+	return cycles;
+    }
+
     int Botnami6809::executeinstr(uint8_t instr)
     {
 	int cycles = 0;
 	switch (instr)
 	{
+	    case 0x1A:
+	    {
+		status_reg |= getimmByte();
+		cycles = 3;
+	    }
+	    break; // ORCC imm
+	    case 0x1C:
+	    {
+		status_reg &= getimmByte();
+		cycles = 3;
+	    }
+	    break; // ANDCC imm
+	    case 0x26:
+	    {
+		cycles = branch(is_cond_ne());
+	    }
+	    break; // BNE rel8
+	    case 0x3D:
+	    {
+		cycles = mul();
+	    }
+	    break; // MUL
 	    case 0x4A:
 	    case 0x4B:
 	    {
-		rega = dec_internal8(rega);
+		rega = dec8(rega);
 		cycles = 2;
 	    }
 	    break; // DECA
 	    case 0x4F:
 	    {
-		set_nz<uint8_t>(0);
-		rega = 0;
+		rega = clr8();
 		cycles = 2;
 	    }
 	    break; // CLRA
 	    case 0x5A:
 	    case 0x5B:
 	    {
-		regb = dec_internal8(regb);
+		regb = dec8(regb);
 		cycles = 2;
 	    }
 	    break; // DECB
 	    case 0x5F:
 	    {
-		set_nz<uint8_t>(0);
-		regb = 0;
+		regb = clr8();
 		cycles = 2;
 	    }
 	    break; // CLRB
+	    case 0x6F:
+	    {
+		int index_cycles = indexed_mode();
+		writeByte(extended_address, clr8());
+		cycles = (4 + index_cycles);
+	    }
+	    break; // CLR8 indexed
+	    case 0x7F:
+	    {
+		uint16_t address = getimmWord();
+		writeByte(address, clr8());
+		cycles = 7;
+	    }
+	    break; // CLR8 extended
 	    case 0x81:
 	    {
-		cmp8(rega, getimmByte());
+		uint8_t operand = getimmByte();
+		cmp8(rega, operand);
 		cycles = 2;
 	    }
-	    break; // CMPA
+	    break; // CMPA imm
 	    case 0x86:
 	    {
-		rega = getimmByte();
-		set_nz(rega);
+		uint8_t operand = getimmByte();
+		rega = load8(operand);
 		cycles = 2;
 	    }
-	    break; // LDA
+	    break; // LDA imm
+	    case 0x8A:
+	    {
+		uint8_t operand = getimmByte();
+		rega = or8(rega, operand);
+		cycles = 2;
+	    }
+	    break; // ORA imm
 	    case 0x8B:
 	    {
-		rega = add8(rega, getimmByte());
+		uint8_t operand = getimmByte();
+		rega = add8(rega, operand);
 		cycles = 2;
 	    }
-	    break; // ADDA
+	    break; // ADDA imm
+	    case 0x8C:
+	    {
+		uint16_t operand = getimmWord();
+		cmp16(regx, operand);
+		cycles = 3;
+	    }
+	    break; // CMPX imm
 	    case 0x8E:
 	    {
-		regx = getimmWord();
-		set_nz(regx);
+		uint16_t operand = getimmWord();
+		regx = load16(operand);
 		cycles = 3;
 	    }
 	    break; // LDX imm16
+	    case 0xA7:
+	    {
+		int index_cycles = indexed_mode();
+		store8(extended_address, rega);
+		cycles = (2 + index_cycles);
+	    }
+	    break; // STA indexed
 	    case 0xC6:
 	    {
-		regb = getimmByte();
-		set_nz(regb);
+		uint8_t operand = getimmByte();
+		regb = load8(operand);
 		cycles = 2;
 	    }
-	    break; // LDB
+	    break; // LDB imm
 	    default: unrecognizedinstr(instr); break;
 	}
 
