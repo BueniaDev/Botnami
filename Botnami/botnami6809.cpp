@@ -107,6 +107,13 @@ namespace botnami
 		cycles = (4 + index_cycles);
 	    }
 	    break; // CLR8 indexed
+	    case 0x7E:
+	    {
+		uint16_t address = getimmWord();
+		pc = address;
+		cycles = 4;
+	    }
+	    break; // JMP extended
 	    case 0x7F:
 	    {
 		uint16_t address = getimmWord();
@@ -156,6 +163,14 @@ namespace botnami
 		cycles = 3;
 	    }
 	    break; // LDX imm16
+	    case 0x97:
+	    {
+		uint8_t operand = getimmByte();
+		uint16_t address = ((regdp << 8) | operand);
+		writeByte(address, rega);
+		cycles = 4;
+	    }
+	    break; // STA direct
 	    case 0xA7:
 	    {
 		int index_cycles = indexed_mode();
@@ -163,6 +178,13 @@ namespace botnami
 		cycles = (2 + index_cycles);
 	    }
 	    break; // STA indexed
+	    case 0xB7:
+	    {
+		uint16_t address = getimmWord();
+		writeByte(address, rega);
+		cycles = 5;
+	    }
+	    break; // STA extended
 	    case 0xC6:
 	    {
 		uint8_t operand = getimmByte();
