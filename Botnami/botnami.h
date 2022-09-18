@@ -1348,6 +1348,12 @@ namespace botnami
 	    }
 
 	    int executeinstr(uint8_t instr);
+	    void debugoutput(bool print_disassembly = true);
+
+	    Botnami6809Status getStatus()
+	    {
+		return status;
+	    }
 
 	protected:
 	    void init_6309()
@@ -1363,7 +1369,34 @@ namespace botnami
 		return testbit(reg_md, 0);
 	    }
 
+	    void setStatus()
+	    {
+		status.rega = rega;
+		status.regb = regb;
+		status.regd = getRegD();
+		status.regx = regx;
+		status.regy = regy;
+		status.regdp = regdp;
+		status.status_reg = status_reg;
+		status.pc = pc;
+		status.usp = usp;
+		status.ssp = ssp;
+	    }
+
+	    Botnami6809Status status;
+
 	    uint8_t reg_md = 0;
+
+	    uint16_t getRegD()
+	    {
+		return ((rega << 8) | regb);
+	    }
+
+	    void setRegD(uint16_t value)
+	    {
+		rega = (value >> 8);
+		regb = (value & 0xFF);
+	    }
     };
 
     class BOTNAMI_API BotnamiKonami1 : public Botnami6809

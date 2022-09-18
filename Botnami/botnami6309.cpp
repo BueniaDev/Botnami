@@ -32,13 +32,19 @@ namespace botnami
 	{
 	    case 0x4A:
 	    {
-		rega = dec_internal8(rega);
+		rega = dec8(rega);
 		cycles = is_native ? 1 : 2;
 	    }
 	    break; // DECA
+	    case 0x4F:
+	    {
+		rega = clr8();
+		cycles = is_native ? 1 : 2;
+	    }
+	    break; // CLRA
 	    case 0x5A:
 	    {
-		regb = dec_internal8(regb);
+		regb = dec8(regb);
 		cycles = is_native ? 1 : 2;
 	    }
 	    break; // DECB
@@ -50,8 +56,8 @@ namespace botnami
 	    break; // CMPA
 	    case 0x86:
 	    {
-		rega = getimmByte();
-		set_nz(rega);
+		uint8_t operand = getimmByte();
+		rega = load8(operand);
 		cycles = 2;
 	    }
 	    break; // LDA
@@ -61,10 +67,17 @@ namespace botnami
 		cycles = 2;
 	    }
 	    break; // ADDA
+	    case 0xB7:
+	    {
+		uint16_t ext_addr = getimmWord();
+		store8(ext_addr, rega);
+		cycles = is_native ? 4 : 5;
+	    }
+	    break; // STA extended
 	    case 0xC6:
 	    {
-		regb = getimmByte();
-		set_nz(regb);
+		uint8_t operand = getimmByte();
+		regb = load8(operand);
 		cycles = 2;
 	    }
 	    break; // LDB
@@ -72,5 +85,20 @@ namespace botnami
 	}
 
 	return cycles;
+    }
+
+    void Botnami6309::debugoutput(bool print_disassembly)
+    {
+	cout << "PC: " << hex << int(status.pc) << endl;
+	cout << "S: " << hex << int(status.ssp) << endl;
+	cout << "CC: " << hex << int(status.status_reg) << endl;
+	cout << "DP: " << hex << int(status.regdp) << endl;
+	cout << "A: " << hex << int(status.rega) << endl;
+	cout << "B: " << hex << int(status.regb) << endl;
+	cout << "D: " << hex << int(status.regd) << endl;
+	cout << "X: " << hex << int(status.regx) << endl;
+	cout << "Y: " << hex << int(status.regy) << endl;
+	cout << "U: " << hex << int(status.usp) << endl;
+	cout << endl;
     }
 };
