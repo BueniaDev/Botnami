@@ -8,7 +8,7 @@ A (WIP) emulation library for the Motorola 6809 processor, written in C++17.
 
 Platform-independent and architecture-independent code
 
-Clock-cycle ticked emulation
+Clock-cycle ticked emulation (inspired by the [chips emulation project](https://github.com/floooh/chips/tree/master))
 
 And more to come!
 
